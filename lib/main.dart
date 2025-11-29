@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
-void main() => runApp(const CerebrixApp());
+void main() {
+  runApp(const CerebrixApp());
+}
 
 class CerebrixApp extends StatelessWidget {
   const CerebrixApp({super.key});
@@ -10,6 +12,7 @@ class CerebrixApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cerebrix',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

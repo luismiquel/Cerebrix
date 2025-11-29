@@ -1,4 +1,7 @@
+// lib/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
+import 'diversion_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -6,7 +9,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cerebrix ⚡ Retos mentales')),
+      appBar: AppBar(
+        title: const Text('Cerebrix ⚡ Retos mentales'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -20,6 +25,31 @@ class HomeScreen extends StatelessWidget {
           _ChallengeCard('📖 Reto de lenguaje', '/lenguaje'),
           _ChallengeCard('🎨 Reto de creatividad', '/creatividad'),
           _ChallengeCard('👤 Perfil', '/perfil'),
+
+          const SizedBox(height: 20),
+
+          // 🔥 NUEVO: MODO DIVERSIÓN
+          Card(
+            color: Colors.amber.shade100,
+            child: ListTile(
+              title: const Text(
+                '🎉 Modo diversión',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              trailing: const Icon(Icons.celebration),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DiversionScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+
         ],
       ),
     );

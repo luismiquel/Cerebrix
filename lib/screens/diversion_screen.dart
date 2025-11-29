@@ -73,7 +73,7 @@ class _DiversionScreenState extends State<DiversionScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                Navigator.of(context).pop(); // Volver atrás
+                Navigator.of(context).pop(); // Volver al Home
               },
               child: const Text('Salir'),
             ),
@@ -89,17 +89,18 @@ class _DiversionScreenState extends State<DiversionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modo Diversión'),
+        title: const Text('Modo diversión'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Indicador de progreso
+            // Progreso
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Pregunta ${_indicePregunta + 1} de ${diversionQuestions.length}',
+                'Pregunta ${_indicePregunta + 1} '
+                'de ${diversionQuestions.length}',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -168,7 +169,7 @@ class _DiversionScreenState extends State<DiversionScreen> {
 
             const SizedBox(height: 16),
 
-            // Botón siguiente
+            // Botón siguiente / ver resultado
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

@@ -1,5 +1,6 @@
 // lib/models/diversion_question.dart
 
+/// Modelo de una pregunta del modo diversión
 class DiversionQuestion {
   final String id;
   final String enunciado;
@@ -14,7 +15,7 @@ class DiversionQuestion {
   });
 }
 
-/// Lista de preguntas de diversión / juegos rápidos
+/// Lista de preguntas del modo diversión / juegos rápidos
 const diversionQuestions = <DiversionQuestion>[
   DiversionQuestion(
     id: 'q1',
@@ -31,8 +32,8 @@ const diversionQuestions = <DiversionQuestion>[
   DiversionQuestion(
     id: 'q3',
     enunciado: 'Si hoy es martes, ¿qué día será dentro de 2 días?',
-    opciones: ['Lunes', 'Jueves', 'Domingo', 'Jueves'],
-    indiceCorrecta: 1, // Jueves
+    opciones: ['Lunes', 'Miércoles', 'Jueves', 'Viernes'],
+    indiceCorrecta: 2, // Jueves
   ),
   DiversionQuestion(
     id: 'q4',
@@ -54,9 +55,10 @@ const diversionQuestions = <DiversionQuestion>[
   ),
   DiversionQuestion(
     id: 'q7',
-    enunciado: 'Si son las tres y media y pasan 30 minutos, ¿qué hora es?',
+    enunciado:
+        'Si son las tres y media y pasan 30 minutos, ¿qué hora es?',
     opciones: ['Cuatro en punto', 'Cuatro y media', 'Tres en punto', 'Cinco'],
-    indiceCorrecta: 0,
+    indiceCorrecta: 0, // cuatro en punto
   ),
   DiversionQuestion(
     id: 'q8',
@@ -65,7 +67,7 @@ const diversionQuestions = <DiversionQuestion>[
       '1 kilo de hierro',
       '1 kilo de plumas',
       'Pesan lo mismo',
-      'Ninguno'
+      'Ninguno',
     ],
     indiceCorrecta: 2,
   ),

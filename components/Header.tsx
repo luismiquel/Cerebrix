@@ -22,24 +22,23 @@ const Header: React.FC<Props> = ({ stats, theme, onToggleTheme, onOpenSettings, 
           className="flex items-center gap-3 hover:opacity-80 transition-all active:scale-95 group"
           aria-label="Ir a Inicio"
         >
-          {stats.customLogo ? (
-            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg border-2 border-emerald-500/40">
-              <img src={stats.customLogo} alt="Cerebrix Logo" className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className="group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.5)] transition-all transform group-hover:scale-105">
-              <Logo />
-            </div>
-          )}
-          <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-blue-700 dark:from-emerald-400 dark:to-blue-500 hidden sm:block drop-shadow-sm transition-all">
-            CEREBRIX
-          </h1>
+          <div className="group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.5)] transition-all transform group-hover:scale-105">
+            <Logo />
+          </div>
+          <div className="flex flex-col items-start">
+            <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-blue-700 dark:from-emerald-400 dark:to-blue-500 hidden sm:block drop-shadow-sm transition-all leading-none">
+              CEREBRIX
+            </h1>
+            <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 hidden md:block uppercase tracking-widest mt-0.5">
+              Por Luis Miguel García
+            </span>
+          </div>
         </button>
         
         <div className="flex items-center gap-3 md:gap-6">
           {/* Contador de Puntos (Versión Desktop) */}
           <div className="hidden sm:flex flex-col items-end pointer-events-none select-none px-4 py-1.5 bg-slate-100/60 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <span className="text-[9px] text-slate-600 dark:text-slate-400 uppercase font-black tracking-widest leading-none mb-0.5">Puntos Totales</span>
+            <span className="text-[9px] text-slate-600 dark:text-slate-400 uppercase font-black tracking-widest leading-none mb-0.5">Puntos</span>
             <span className="text-lg font-black text-slate-900 dark:text-white leading-tight">{stats.totalScore.toLocaleString()}</span>
           </div>
 

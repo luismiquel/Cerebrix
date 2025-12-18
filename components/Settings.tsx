@@ -71,7 +71,8 @@ const Settings: React.FC<Props> = ({
         <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-4xl mb-4 shadow-xl border-4 border-white dark:border-slate-700 z-10 overflow-hidden relative">
           <Logo className="w-full h-full" />
         </div>
-        <h2 className="text-3xl font-black text-slate-800 dark:text-white uppercase italic tracking-tighter z-10">Cerebro Maestro</h2>
+        <h2 className="text-3xl font-black text-slate-800 dark:text-white uppercase italic tracking-tighter z-10 leading-tight">CEREBRIX</h2>
+        <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest z-10">Mente Maestra</span>
         
         <div className="flex gap-4 mt-6 z-10 w-full justify-center flex-wrap">
           <div className="flex flex-col items-center p-4 bg-white/5 rounded-2xl border border-white/10 min-w-[100px]">
@@ -213,7 +214,7 @@ const Settings: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Dificultad Global (Solo si Modo Senior está OFF) */}
+        {/* Dificultad Global */}
         <div className={`glass rounded-3xl p-6 space-y-4 transition-all duration-300 ${isSeniorMode ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-slate-200 dark:bg-slate-800">
@@ -222,7 +223,7 @@ const Settings: React.FC<Props> = ({
             <div className="flex-1">
               <span className="block font-black text-lg text-slate-800 dark:text-white uppercase tracking-tight">Dificultad Global</span>
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                {isSeniorMode ? 'Inhabilitado en Modo Senior (Fijado en Fácil).' : 'Nivel de desafío predeterminado para los juegos.'}
+                {isSeniorMode ? 'Fijado en Fácil para Modo Senior.' : 'Nivel de desafío predeterminado.'}
               </span>
             </div>
           </div>
@@ -247,7 +248,7 @@ const Settings: React.FC<Props> = ({
             </div>
             <div>
               <span className="block font-black text-lg text-slate-800 dark:text-white uppercase tracking-tight">Tamaño de Fuente</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Ajusta la legibilidad global de la plataforma.</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Ajusta la legibilidad global.</span>
             </div>
           </div>
           <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
@@ -274,7 +275,7 @@ const Settings: React.FC<Props> = ({
             </div>
             <div>
               <span className="block font-black text-lg text-slate-800 dark:text-white uppercase tracking-tight">Tema Visual</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Alternar entre modo {theme === 'dark' ? 'claro' : 'oscuro'}.</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Alternar modo {theme === 'dark' ? 'claro' : 'oscuro'}.</span>
             </div>
           </div>
           <div className={`w-12 h-6 rounded-full transition-all relative flex items-center px-1 ${theme === 'dark' ? 'bg-teal-500' : 'bg-slate-300'}`}>
@@ -288,9 +289,12 @@ const Settings: React.FC<Props> = ({
           onClick={onClearData}
           className="text-rose-500 font-bold text-xs uppercase tracking-widest hover:underline opacity-60 hover:opacity-100"
         >
-          Borrar Historial de Entrenamiento
+          Borrar Historial
         </button>
-        <p className="text-[10px] text-slate-500 font-medium">CEREBRIX ENGINE v2.6 • PERSONAL COGNITIVE PARTNER</p>
+        <div className="flex flex-col items-center text-center">
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-tighter mb-1">CEREBRIX v2.6</p>
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">Hecho por Luis Miguel Garcia de las morenas</p>
+        </div>
       </div>
     </div>
   );

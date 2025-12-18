@@ -15,17 +15,15 @@ const TETROMINOS = {
 const COLS = 10;
 const ROWS = 20;
 
-const createGrid = () => Array.from(Array(ROWS), () => Array(COLS).fill(0));
-
 const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode }) => {
-  const [grid, setGrid] = useState<number[][]>(createGrid());
+  const [grid, setGrid] = useState<number[][]>(Array.from(Array(ROWS), () => Array(COLS).fill(0)));
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [currentPiece, setCurrentPiece] = useState<any>(null);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [pos, setPos] = useState({ x: 3, y: 0 });
 
   const dropInterval = isSeniorMode ? 1200 : (difficulty === 'hard' ? 400 : 800);
-  const timerRef = useRef<number>(0);
+  const vibrate = (pattern: number | number[]) => { if (navigator.vibrate) navigator.vibrate(pattern); };
 
   const checkCollision = useCallback((pShape: number[][], pPos: { x: number, y: number }, board: number[][]) => {
     for (let y = 0; y < pShape.length; y++) {
@@ -55,37 +53,32 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode 
     }
   }, [grid, checkCollision, score, onGameOver]);
 
-  useEffect(() => {
-    spawn();
-  }, []);
+  useEffect(() => { spawn(); }, []);
 
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || !currentPiece) return;
     const interval = setInterval(() => {
       if (!checkCollision(currentPiece.shape, { x: pos.x, y: pos.y + 1 }, grid)) {
         setPos(p => ({ ...p, y: p.y + 1 }));
       } else {
-        // Lock
         const newGrid = grid.map(row => [...row]);
         currentPiece.shape.forEach((row: number[], y: number) => {
-          row.forEach((v, x) => {
-            if (v !== 0) newGrid[y + pos.y][x + pos.x] = v;
-          });
+          row.forEach((v, x) => { if (v !== 0) newGrid[y + pos.y][x + pos.x] = v; });
         });
-        
-        // Clear lines
         let cleared = 0;
         const filtered = newGrid.filter(row => {
-          if (row.every(c => c !== 0)) {
-            cleared++;
-            return false;
-          }
-          return true;
+          const isFull = row.every(c => c !== 0);
+          if (isFull) cleared++;
+          return !isFull;
         });
         while (filtered.length < ROWS) filtered.unshift(Array(COLS).fill(0));
-        
         setGrid(filtered);
-        setScore(s => s + (cleared * 100));
+        if (cleared > 0) {
+            vibrate([40, 30, 80]);
+            setScore(s => s + (cleared * 100));
+        } else {
+            vibrate(15);
+        }
         spawn();
       }
     }, dropInterval);
@@ -95,6 +88,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode 
   const move = (dx: number) => {
     if (!checkCollision(currentPiece.shape, { x: pos.x + dx, y: pos.y }, grid)) {
       setPos(p => ({ ...p, x: p.x + dx }));
+      vibrate(10);
     }
   };
 
@@ -102,21 +96,29 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode 
     const rotated = currentPiece.shape[0].map((_: any, i: number) => currentPiece.shape.map((row: any) => row[i]).reverse());
     if (!checkCollision(rotated, pos, grid)) {
       setCurrentPiece({ ...currentPiece, shape: rotated });
+      vibrate(25);
+    }
+  };
+
+  const dropFaster = () => {
+    if (!checkCollision(currentPiece.shape, { x: pos.x, y: pos.y + 1 }, grid)) {
+      setPos(p => ({ ...p, y: p.y + 1 }));
+      vibrate(10);
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="text-xl font-bold">Puntos: {score}</div>
-      <div className="bg-slate-950 p-1 border-4 border-slate-800 rounded-xl">
-        <div className="grid grid-cols-10 grid-rows-20 w-48 h-96 gap-px">
+    <div className="flex flex-col items-center justify-between h-full select-none touch-none">
+      <div className="text-2xl font-black text-blue-400 italic mb-2 tracking-tighter">{score.toLocaleString()} PUNTOS</div>
+      
+      <div className="bg-slate-950 p-1 border-4 border-slate-800 rounded-2xl shadow-2xl relative">
+        <div className="grid grid-cols-10 grid-rows-20 w-[180px] h-[360px] gap-px">
           {grid.map((row, y) => row.map((cell, x) => {
-            let color = 'bg-slate-900';
+            let color = 'bg-slate-900/40';
             if (cell !== 0) {
               const types = ['bg-cyan-400', 'bg-blue-500', 'bg-orange-500', 'bg-yellow-400', 'bg-green-500', 'bg-purple-500', 'bg-rose-500'];
               color = types[cell - 1];
             }
-            // Pieza actual activa
             if (currentPiece) {
               const py = y - pos.y;
               const px = x - pos.x;
@@ -124,14 +126,39 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode 
                 if (currentPiece.shape[py][px] !== 0) color = currentPiece.color;
               }
             }
-            return <div key={`${y}-${x}`} className={`w-full h-full ${color}`} />;
+            return <div key={`${y}-${x}`} className={`w-full h-full rounded-sm ${color}`} />;
           }))}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 w-48">
-        <button onClick={() => move(-1)} className="p-4 bg-slate-700 rounded-xl">←</button>
-        <button onClick={rotate} className="p-4 bg-slate-700 rounded-xl">↻</button>
-        <button onClick={() => move(1)} className="p-4 bg-slate-700 rounded-xl">→</button>
+
+      {/* CONTROLES ERGONÓMICOS REFORZADOS PARA MÓVIL */}
+      <div className="w-full flex justify-between gap-4 px-2 mt-6 h-44">
+        {/* Pulgar Izquierdo: Movimiento y Caída Rápida */}
+        <div className="grid grid-cols-2 gap-2 flex-1">
+            <button 
+              onPointerDown={(e) => { e.preventDefault(); move(-1); }} 
+              className="h-20 bg-slate-800/80 rounded-3xl border-b-8 border-slate-950 flex items-center justify-center text-4xl active:scale-90 active:translate-y-2 active:border-b-0 transition-all shadow-lg"
+            >←</button>
+            <button 
+              onPointerDown={(e) => { e.preventDefault(); move(1); }} 
+              className="h-20 bg-slate-800/80 rounded-3xl border-b-8 border-slate-950 flex items-center justify-center text-4xl active:scale-90 active:translate-y-2 active:border-b-0 transition-all shadow-lg"
+            >→</button>
+            <button 
+              onPointerDown={(e) => { e.preventDefault(); dropFaster(); }} 
+              className="col-span-2 h-20 bg-slate-700/60 rounded-3xl border-b-8 border-slate-900 flex items-center justify-center text-4xl active:scale-95 active:translate-y-2 active:border-b-0 transition-all shadow-inner"
+            >↓</button>
+        </div>
+        
+        {/* Pulgar Derecho: Rotación (Botón Principal Grande) */}
+        <div className="w-1/3 flex flex-col gap-2">
+            <button 
+              onPointerDown={(e) => { e.preventDefault(); rotate(); }} 
+              className="h-full bg-indigo-600 rounded-[2.5rem] border-b-8 border-indigo-950 flex flex-col items-center justify-center active:scale-90 active:translate-y-2 active:border-b-0 transition-all shadow-xl"
+            >
+                <span className="text-5xl text-white">↻</span>
+                <span className="text-[10px] font-black uppercase text-white/50 tracking-widest mt-1">ROTAR</span>
+            </button>
+        </div>
       </div>
     </div>
   );

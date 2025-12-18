@@ -2,275 +2,123 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameProps } from '../../types';
 
-interface Note {
-  id: number;
-  lane: number;
-  top: number;
-  hit: boolean;
-  type: 'normal' | 'power';
-}
-
+interface Note { id: number; lane: number; top: number; hit: boolean; }
 const LANES = [0, 1, 2, 3];
-const LANE_KEYS = ['D', 'F', 'J', 'K'];
 const LANE_COLORS = ['#f43f5e', '#0ea5e9', '#10b981', '#f59e0b'];
-const HIT_ZONE_Y = 82;
 
-const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, fontSize }) => {
+const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty }) => {
   const [score, setScore] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const [maxCombo, setMaxCombo] = useState(0);
-  const [isSpeedRush, setIsSpeedRush] = useState(false);
-  
-  const getInitialTime = () => {
-    if (isSpeedRush) return 30;
-    if (difficulty === 'hard') return 40;
-    if (difficulty === 'easy') return 60;
-    return isSeniorMode ? 60 : 45;
-  };
-
-  const [timeLeft, setTimeLeft] = useState(getInitialTime());
+  const [timeLeft, setTimeLeft] = useState(45);
   const [notes, setNotes] = useState<Note[]>([]);
-  const [feedback, setFeedback] = useState<{ msg: string, color: string, id: number } | null>(null);
   const [laneFlash, setLaneFlash] = useState<boolean[]>([false, false, false, false]);
-  const [bgPulse, setBgPulse] = useState(false);
+  const [lastHitStatus, setLastHitStatus] = useState<string | null>(null);
   
   const requestRef = useRef<number>(0);
-  const nextNoteId = useRef(0);
   const lastSpawnTime = useRef(0);
+  const nextNoteId = useRef(0);
 
-  const triggerVibrate = (pattern: number | number[]) => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(pattern);
-    }
-  };
-
-  const getSpawnRate = () => {
-    if (isSpeedRush) return 250;
-    let rate = 650;
-    if (difficulty === 'easy') rate = 900;
-    if (difficulty === 'hard') rate = 450;
-    if (isSeniorMode) rate = 1300;
-    return rate;
-  };
-
-  const getNoteSpeed = () => {
-    if (isSpeedRush) return 1.3 + (combo * 0.005);
-    let speed = 0.6;
-    if (difficulty === 'easy') speed = 0.4;
-    if (difficulty === 'hard') speed = 0.9;
-    if (isSeniorMode) speed = 0.3;
-    return speed;
-  };
+  const vibrate = (ms: number | number[]) => { if (navigator.vibrate) navigator.vibrate(ms); };
 
   const gameLoop = useCallback((time: number) => {
     if (timeLeft <= 0) return;
-
-    const currentRate = getSpawnRate();
-    if (time - lastSpawnTime.current > currentRate) {
-      const lane = Math.floor(Math.random() * 4);
-      const isPower = Math.random() > 0.96;
-      setNotes(prev => [...prev, {
-        id: nextNoteId.current++,
-        lane,
-        top: -10,
-        hit: false,
-        type: isPower ? 'power' : 'normal'
-      }]);
+    const rate = difficulty === 'hard' ? 400 : 800;
+    if (time - lastSpawnTime.current > rate) {
+      setNotes(prev => [...prev, { id: nextNoteId.current++, lane: Math.floor(Math.random() * 4), top: -10, hit: false }]);
       lastSpawnTime.current = time;
     }
-
     setNotes(prev => {
-      const nextNotes: Note[] = [];
-      let missed = false;
-
-      prev.forEach(note => {
-        const newTop = note.top + getNoteSpeed();
-        if (newTop > 100) {
-          if (!note.hit) missed = true;
-        } else {
-          nextNotes.push({ ...note, top: newTop });
-        }
-      });
-
-      if (missed) {
-        setCombo(0);
-        showFeedback('MISS', 'text-rose-500');
-        triggerVibrate(35);
-      }
-      return nextNotes;
-    });
-
-    requestRef.current = requestAnimationFrame(gameLoop);
-  }, [timeLeft, score, difficulty, isSpeedRush, combo, isSeniorMode]);
-
-  useEffect(() => {
-    requestRef.current = requestAnimationFrame(gameLoop);
-    return () => cancelAnimationFrame(requestRef.current);
-  }, [gameLoop]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          onGameOver(Math.floor(score * 15));
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [onGameOver, score]);
-
-  const showFeedback = (msg: string, color: string) => {
-    setFeedback({ msg, color, id: Date.now() });
-    setBgPulse(msg.includes('PERFECT') || msg.includes('GREAT'));
-    setTimeout(() => {
-        setFeedback(null);
-        setBgPulse(false);
-    }, 400);
-  };
-
-  const handleLaneAction = (laneIndex: number) => {
-    setLaneFlash(prev => {
-      const next = [...prev];
-      next[laneIndex] = true;
+      const next = prev.map(n => ({ ...n, top: n.top + (difficulty === 'hard' ? 1.4 : 1.0) })).filter(n => n.top < 110);
       return next;
     });
-    setTimeout(() => {
-      setLaneFlash(prev => {
-        const next = [...prev];
-        next[laneIndex] = false;
-        return next;
-      });
-    }, 100);
+    requestRef.current = requestAnimationFrame(gameLoop);
+  }, [timeLeft, difficulty]);
 
+  useEffect(() => {
+    requestRef.current = requestAnimationFrame(gameLoop);
+    const timer = setInterval(() => setTimeLeft(t => t > 0 ? t - 1 : 0), 1000);
+    return () => { cancelAnimationFrame(requestRef.current); clearInterval(timer); };
+  }, [gameLoop]);
+
+  useEffect(() => { if (timeLeft === 0) onGameOver(score); }, [timeLeft, score]);
+
+  const handleAction = (lane: number) => {
+    setLaneFlash(prev => { const n = [...prev]; n[lane] = true; return n; });
+    setTimeout(() => setLaneFlash(prev => { const n = [...prev]; n[lane] = false; return n; }), 100);
+    
     setNotes(prev => {
-      const scanRange = isSeniorMode ? 20 : 12;
-      const targetIdx = prev.findIndex(n => 
-        n.lane === laneIndex && !n.hit && Math.abs(n.top - HIT_ZONE_Y) < scanRange
-      );
-
+      const targetIdx = prev.findIndex(n => n.lane === lane && !n.hit && Math.abs(n.top - 85) < 18);
       if (targetIdx !== -1) {
-        const note = prev[targetIdx];
-        const distance = Math.abs(note.top - HIT_ZONE_Y);
-        
-        const newNotes = [...prev];
-        newNotes[targetIdx].hit = true;
-        newNotes[targetIdx].top = 200; // Sacar de pantalla
-
-        if (distance < scanRange / 3) {
-          setScore(s => s + (note.type === 'power' ? 100 : 50));
-          setCombo(c => {
-            const nc = c + 1;
-            if (nc > maxCombo) setMaxCombo(nc);
-            return nc;
-          });
-          showFeedback('PERFECT!', 'text-pink-400');
-          triggerVibrate(20);
-        } else if (distance < scanRange * 0.7) {
-          setScore(s => s + 25);
-          setCombo(c => c + 1);
-          showFeedback('GREAT', 'text-cyan-400');
-          triggerVibrate(15);
+        const precision = Math.abs(prev[targetIdx].top - 85);
+        if (precision < 5) {
+            setLastHitStatus('¡PERFECTO!');
+            vibrate([20, 10, 20]);
+            setScore(s => s + 100);
         } else {
-          setScore(s => s + 10);
-          setCombo(c => c + 1);
-          showFeedback('GOOD', 'text-emerald-400');
-          triggerVibrate(10);
+            setLastHitStatus('BIEN');
+            vibrate(15);
+            setScore(s => s + 50);
         }
-        return newNotes;
+        setTimeout(() => setLastHitStatus(null), 500);
+        const updated = [...prev];
+        updated[targetIdx].hit = true;
+        updated[targetIdx].top = 200; // Eliminar visualmente
+        return updated;
       }
       return prev;
     });
   };
 
   return (
-    <div className={`flex flex-col items-center justify-between h-full p-4 w-full max-w-lg mx-auto overflow-hidden relative transition-colors duration-300 select-none ${bgPulse ? 'bg-white/5' : ''}`}>
-      
-      <div className="flex justify-between w-full items-end z-20">
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase text-slate-500 font-black tracking-widest">Puntos</span>
-          <div className={`font-black text-pink-500 ${fontSize === 'large' ? 'text-4xl' : 'text-3xl'}`}>
-            {score.toLocaleString()}
-          </div>
-        </div>
-        
-        <div className="flex flex-col items-center">
-            {feedback && (
-                <span key={feedback.id} className={`font-black uppercase tracking-tighter animate-ping ${feedback.color} ${fontSize === 'large' ? 'text-3xl' : 'text-xl'}`}>
-                    {feedback.msg}
-                </span>
-            )}
-            {combo > 1 && <span className="text-white font-black text-lg">{combo}x Combo</span>}
-        </div>
-
-        <div className="flex flex-col items-end">
-           <span className="text-[10px] uppercase text-slate-500 font-black tracking-widest">Tiempo</span>
-           <span className={`font-mono font-bold ${timeLeft < 10 ? 'text-rose-500 animate-pulse' : 'text-slate-300'} ${fontSize === 'large' ? 'text-4xl' : 'text-3xl'}`}>
-             {timeLeft}s
-           </span>
-        </div>
+    <div className="flex flex-col items-center h-full w-full max-w-lg mx-auto overflow-hidden relative select-none touch-none">
+      <div className="flex justify-between w-full px-6 mb-4 z-20">
+        <span className="text-4xl font-black text-pink-500 drop-shadow-lg">{score}</span>
+        <span className="text-3xl font-mono text-slate-400">{timeLeft}s</span>
       </div>
 
-      {/* Área de Juego */}
-      <div className="relative flex-1 w-full mt-4 mb-4 bg-slate-900/60 rounded-3xl border-2 border-slate-800 overflow-hidden perspective-500">
-        {/* Carriles */}
-        <div className="absolute inset-0 flex justify-between px-[12.5%]">
-          {[1, 2, 3].map(i => <div key={i} className="h-full w-px bg-slate-800" />)}
-        </div>
-
-        {/* Zona de Hit */}
-        <div 
-            className="absolute w-full h-1 bg-white/20 z-10"
-            style={{ top: `${HIT_ZONE_Y}%` }}
-        />
-
-        {/* Notas */}
-        {notes.map(note => !note.hit && (
-            <div
-                key={note.id}
-                className={`absolute w-[20%] rounded-full shadow-lg z-20`}
-                style={{
-                    top: `${note.top}%`,
-                    left: `${(note.lane * 25) + 2.5}%`,
-                    height: note.type === 'power' ? '8%' : '5%',
-                    backgroundColor: LANE_COLORS[note.lane],
-                    boxShadow: `0 0 20px ${LANE_COLORS[note.lane]}`,
-                    transform: `scale(${1 + (note.top / 400)})`
-                }}
-            />
+      <div className="relative flex-1 w-full bg-slate-900/60 rounded-[3rem] border-4 border-slate-800 overflow-hidden shadow-2xl">
+        {LANES.map(l => (
+            <div key={l} className={`absolute h-full w-[25%] transition-opacity duration-150 ${laneFlash[l] ? 'opacity-40' : 'opacity-0'}`} style={{ left: `${l*25}%`, background: `linear-gradient(to top, ${LANE_COLORS[l]}, transparent)` }} />
         ))}
+        
+        {/* Marcador de Tiempo de Golpe (Strike Zone) */}
+        <div className="absolute w-full h-1 bg-white/40 top-[85%] z-10" />
+        <div className="absolute w-full h-12 bg-white/5 top-[80%] pointer-events-none" />
 
-        {/* Flashes de Carril */}
-        {LANES.map(lane => (
+        {/* Mensaje de feedback visual central */}
+        {lastHitStatus && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+                <span className={`text-5xl font-black italic uppercase animate-ping ${lastHitStatus === '¡PERFECTO!' ? 'text-yellow-400' : 'text-white'}`}>
+                    {lastHitStatus}
+                </span>
+            </div>
+        )}
+
+        {notes.map(n => !n.hit && (
           <div 
-            key={lane}
-            className={`absolute h-full w-[25%] transition-opacity duration-150 ${laneFlash[lane] ? 'opacity-100' : 'opacity-0'}`}
+            key={n.id} 
+            className="absolute w-[20%] h-[5%] rounded-full shadow-2xl transition-transform" 
             style={{ 
-              left: `${lane * 25}%`,
-              background: `linear-gradient(to top, ${LANE_COLORS[lane]}44, transparent)`
-            }}
+                top: `${n.top}%`, 
+                left: `${(n.lane*25)+2.5}%`, 
+                backgroundColor: LANE_COLORS[n.lane], 
+                boxShadow: `0 0 20px ${LANE_COLORS[n.lane]}`,
+                transform: `scale(${n.top > 80 && n.top < 90 ? 1.2 : 1})`
+            }} 
           />
         ))}
       </div>
 
-      {/* MANDOS TÁCTILES ERGONÓMICOS */}
-      <div className="grid grid-cols-4 gap-3 w-full h-24">
-        {LANES.map((lane, idx) => (
-            <button
-                key={lane}
-                onPointerDown={(e) => { e.preventDefault(); handleLaneAction(lane); }}
-                className={`
-                    rounded-2xl flex flex-col items-center justify-center transition-all duration-75 border-b-8 active:translate-y-2 active:border-b-0
-                    ${laneFlash[lane] ? 'bg-slate-700 border-slate-600' : 'bg-slate-800 border-slate-950'}
-                `}
-            >
-                <div className="w-4 h-4 rounded-full mb-1" style={{ backgroundColor: LANE_COLORS[idx] }} />
-                <span className={`font-black text-xl ${laneFlash[lane] ? 'text-white' : 'text-slate-500'}`}>
-                  {LANE_KEYS[idx]}
-                </span>
-            </button>
+      {/* CARRILERAS TÁCTILES ERGONÓMICAS */}
+      <div className="grid grid-cols-4 gap-3 w-full h-32 mt-6">
+        {LANES.map(l => (
+          <button 
+            key={l} 
+            onPointerDown={(e) => { e.preventDefault(); handleAction(l); }} 
+            className="h-full rounded-[2rem] bg-slate-800/80 border-b-8 border-slate-950 active:translate-y-3 active:border-b-0 active:bg-slate-700 transition-all flex items-center justify-center shadow-lg"
+            aria-label={`Carril ${l+1}`}
+          >
+            <div className="w-10 h-10 rounded-full border-4 border-white/20" style={{ backgroundColor: LANE_COLORS[l] }} />
+          </button>
         ))}
       </div>
     </div>

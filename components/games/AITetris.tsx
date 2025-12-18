@@ -34,10 +34,8 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
   const lastTimeRef = useRef<number>(0);
   const dropCounterRef = useRef<number>(0);
 
-  const showGhost = difficulty !== 'master';
-
-  const vibrate = (ms: number) => {
-    if (navigator.vibrate) navigator.vibrate(ms);
+  const vibrate = (ms: number | number[]) => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(ms);
   };
 
   const getDropInterval = () => {
@@ -94,6 +92,8 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
     if (!checkCollision(currentPiece.shape, nextPos, grid)) {
       setPos(nextPos);
       vibrate(10);
+    } else {
+        vibrate([5, 10]);
     }
   };
 
@@ -109,7 +109,7 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
     }
     setPos(prev => ({ ...prev, x: prev.x + offset }));
     setCurrentPiece(prev => ({ ...prev!, shape: rotated }));
-    vibrate(20);
+    vibrate(25);
   };
 
   const lockPiece = () => {
@@ -139,7 +139,7 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
     setGrid(finalGrid);
     
     if (cleared > 0) {
-      vibrate(100);
+      vibrate([40, 30, 80]);
       const points = [0, 100, 300, 500, 800, 1200];
       setScore(s => s + points[cleared] * level * (difficulty === 'master' ? 3 : 1));
       setLines(l => {
@@ -148,7 +148,7 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
           return nl;
       });
     } else {
-      vibrate(30);
+      vibrate(15);
     }
     if (nextPiece) spawnPiece(nextPiece);
   };
@@ -171,7 +171,7 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
     }
     setPos(p => ({ ...p, y: tempY }));
     lockPiece();
-    vibrate(50);
+    vibrate([30, 20, 30]);
   };
 
   const update = (time: number) => {
@@ -208,9 +208,8 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full h-full max-w-md mx-auto select-none">
+    <div className="flex flex-col items-center gap-4 w-full h-full max-w-md mx-auto select-none touch-none">
       
-      {/* Header del Juego */}
       <div className="flex justify-between w-full px-4 items-center">
         <div>
            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block">Puntos</span>
@@ -228,11 +227,10 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
         </div>
       </div>
 
-      {/* Pantalla Principal del Juego */}
       <div className="relative flex gap-4 items-start">
         <div 
           className={`bg-slate-950 border-4 ${difficulty === 'master' ? 'border-indigo-500/50 shadow-2xl shadow-indigo-500/20' : 'border-slate-800'} p-1 rounded-2xl relative overflow-hidden`}
-          style={{ width: 'min(60vw, 240px)', height: 'min(120vw, 480px)' }}
+          style={{ width: 'min(55vw, 220px)', height: 'min(110vw, 440px)' }}
         >
            <div className="grid grid-cols-10 grid-rows-20 w-full h-full gap-px">
               {grid.map((row, y) => row.map((cell, x) => (
@@ -258,7 +256,6 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
            }))}
         </div>
 
-        {/* Info Lateral para Tablet/Desktop */}
         <div className="hidden sm:flex flex-col gap-4">
             <div className="bg-slate-800 p-3 rounded-2xl border border-slate-700">
                 <span className="text-[10px] font-bold text-slate-500 uppercase block mb-2">Siguiente</span>
@@ -272,57 +269,40 @@ const AITetris: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode, f
                     )}
                 </div>
             </div>
-            {difficulty === 'master' && (
-              <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-[8px] font-black text-indigo-400 text-center uppercase tracking-tighter">
-                MODO MAESTRO:<br/>PENTOMINÓS ACTIVOS
-              </div>
-            )}
         </div>
       </div>
 
-      {/* MANDOS PARA MÓVIL - Layout de Pulgares */}
       <div className="w-full px-2 mt-auto pb-4">
         <div className="flex gap-4 items-end">
-            
-            {/* Pad de Movimiento (Izquierda) */}
-            <div className="grid grid-cols-3 gap-2 flex-1">
+            <div className="grid grid-cols-3 gap-3 flex-1">
                 <div />
                 <button 
                   onPointerDown={(e) => { e.preventDefault(); rotate(); }}
-                  className="h-16 rounded-2xl bg-slate-800/80 border-b-4 border-slate-950 flex items-center justify-center text-2xl active:translate-y-1 active:border-b-0 active:bg-indigo-600 transition-all"
-                >
-                  ↻
-                </button>
+                  className="h-20 rounded-3xl bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-3xl active:translate-y-2 active:border-b-0 active:bg-indigo-600 transition-all shadow-xl"
+                >↻</button>
                 <div />
                 
                 <button 
                   onPointerDown={(e) => { e.preventDefault(); move(-1); }}
-                  className="h-16 rounded-2xl bg-slate-800/80 border-b-4 border-slate-950 flex items-center justify-center text-2xl active:translate-y-1 active:border-b-0 active:bg-indigo-600 transition-all"
-                >
-                  ←
-                </button>
+                  className="h-20 rounded-3xl bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl active:translate-y-2 active:border-b-0 active:bg-indigo-600 transition-all shadow-xl"
+                >←</button>
                 <button 
                   onPointerDown={(e) => { e.preventDefault(); drop(); }}
-                  className="h-16 rounded-2xl bg-slate-800/80 border-b-4 border-slate-950 flex items-center justify-center text-2xl active:translate-y-1 active:border-b-0 active:bg-indigo-600 transition-all"
-                >
-                  ↓
-                </button>
+                  className="h-20 rounded-3xl bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl active:translate-y-2 active:border-b-0 active:bg-indigo-600 transition-all shadow-xl"
+                >↓</button>
                 <button 
                   onPointerDown={(e) => { e.preventDefault(); move(1); }}
-                  className="h-16 rounded-2xl bg-slate-800/80 border-b-4 border-slate-950 flex items-center justify-center text-2xl active:translate-y-1 active:border-b-0 active:bg-indigo-600 transition-all"
-                >
-                  →
-                </button>
+                  className="h-20 rounded-3xl bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl active:translate-y-2 active:border-b-0 active:bg-indigo-600 transition-all shadow-xl"
+                >→</button>
             </div>
 
-            {/* Acción Especial (Derecha) */}
-            <div className="w-24">
+            <div className="w-28">
                 <button 
                   onPointerDown={(e) => { e.preventDefault(); hardDrop(); }}
-                  className="w-full h-24 rounded-full bg-indigo-600 border-b-8 border-indigo-900 flex flex-col items-center justify-center shadow-2xl active:translate-y-2 active:border-b-0 transition-all"
+                  className="w-full h-28 rounded-full bg-indigo-600 border-b-8 border-indigo-900 flex flex-col items-center justify-center shadow-2xl active:translate-y-2 active:border-b-0 transition-all"
                 >
-                   <span className="text-3xl text-white">⇊</span>
-                   <span className="text-[8px] font-black text-white/50 uppercase tracking-tighter">Hard Drop</span>
+                   <span className="text-4xl text-white">⇊</span>
+                   <span className="text-[10px] font-black text-white/50 uppercase tracking-tighter mt-1">Gota</span>
                 </button>
             </div>
         </div>

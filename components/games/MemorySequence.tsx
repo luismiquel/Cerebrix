@@ -2,21 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import { GameProps } from '../../types';
 
-const MemorySequence: React.FC<GameProps> = ({ onGameOver }) => {
+const MemorySequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSeq, setUserSeq] = useState<number[]>([]);
   const [active, setActive] = useState<number | null>(null);
   const [state, setState] = useState<'watch' | 'play'>('watch');
 
+  const speedMultiplier = difficulty === 'master' ? 0.5 : (difficulty === 'hard' ? 0.8 : 1);
   const vibrate = (pattern: number | number[]) => { if (navigator.vibrate) navigator.vibrate(pattern); };
 
   const playSequence = async (seq: number[]) => {
     setState('watch');
     for (const id of seq) {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 500 * speedMultiplier));
       setActive(id);
       vibrate(10);
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 400 * speedMultiplier));
       setActive(null);
     }
     setState('play');
@@ -42,17 +43,17 @@ const MemorySequence: React.FC<GameProps> = ({ onGameOver }) => {
       return;
     }
     if (nextUser.length === sequence.length) {
-      setTimeout(nextLevel, 800);
+      setTimeout(nextLevel, 800 * speedMultiplier);
     }
   };
 
   const COLORS = ['bg-rose-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500'];
-  const GLOWS = ['shadow-rose-500', 'shadow-blue-500', 'shadow-emerald-500', 'shadow-amber-500'];
 
   return (
     <div className="flex flex-col items-center gap-10 select-none">
       <div className="text-2xl font-black uppercase tracking-widest text-slate-400">
         {state === 'watch' ? 'MEMORIZA' : 'TU TURNO'}
+        {difficulty === 'master' && <span className="block text-[10px] text-rose-500 animate-pulse">VELOCIDAD MAESTRO</span>}
       </div>
       <div className="grid grid-cols-2 gap-6 w-full max-w-[340px]">
         {[0, 1, 2, 3].map(i => (

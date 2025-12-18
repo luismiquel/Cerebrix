@@ -31,15 +31,20 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
     setGridSize(newSize);
 
     const totalTiles = newSize * newSize;
-    const targetCount = 3 + Math.floor((level - 1) / 2.5);
+    // Maestro: 50% más cuadros para memorizar
+    const multiplier = difficulty === 'master' ? 1.5 : 1;
+    const targetCount = Math.floor((3 + Math.floor((level - 1) / 2.5)) * multiplier);
 
     const newTargets = new Set<number>();
-    while (newTargets.size < targetCount) {
+    while (newTargets.size < Math.min(targetCount, totalTiles - 1)) {
       newTargets.add(Math.floor(Math.random() * totalTiles));
     }
     setTargets(Array.from(newTargets));
 
-    const memorizeTime = 1200 + (targetCount * 400); 
+    // Maestro: memorización más rápida
+    const baseMemorizeTime = difficulty === 'master' ? 800 : 1200;
+    const perTargetTime = difficulty === 'master' ? 250 : 400;
+    const memorizeTime = baseMemorizeTime + (targetCount * perTargetTime); 
     
     const timer = setTimeout(() => {
       setStatus('recall');
@@ -47,7 +52,7 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
     }, memorizeTime);
 
     return () => clearTimeout(timer);
-  }, [level]);
+  }, [level, difficulty]);
 
   useEffect(() => {
     startLevel();
@@ -64,7 +69,7 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
       if (newSelected.length === targets.length) {
         setStatus('success');
         triggerVibrate(30);
-        setScore(s => s + (targets.length * 50));
+        setScore(s => s + (targets.length * (difficulty === 'master' ? 100 : 50)));
         setTimeout(() => setLevel(l => l + 1), 800);
       }
     } else {

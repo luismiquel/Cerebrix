@@ -48,8 +48,9 @@ export interface Achievement {
 
 export interface DynamicAchievement extends Achievement {
   isDynamic: boolean;
-  dynamicType: string;
+  dynamicType: 'accumulation' | 'consecutive' | 'milestone';
   targetValue: number;
+  gameId?: string; // Opcional, para logros de juegos específicos
   getCurrentProgress: (stats: UserStats) => number;
 }
 
@@ -63,4 +64,5 @@ export interface GameProps {
   fontSize?: 'small' | 'normal' | 'large';
   isDailyChallenge?: boolean;
   currentRound?: number;
+  game?: GameMetadata;
 }

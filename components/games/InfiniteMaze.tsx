@@ -13,8 +13,8 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
   const getInitialSize = () => {
     switch (difficulty) {
       case 'easy': return 6;
-      case 'master': return 15;
-      case 'hard': return 10;
+      case 'master': return 20;
+      case 'hard': return 12;
       case 'medium': default: return 8;
     }
   };
@@ -27,9 +27,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
   const [totalScore, setTotalScore] = useState(0);
 
   const triggerVibrate = (ms: number | number[]) => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(ms);
-    }
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(ms);
   };
 
   const generateMaze = useCallback((s: number) => {
@@ -85,23 +83,34 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
     const { r, c } = playerPos;
     if (maze.length === 0) return;
     const currentCell = maze[r][c];
-    if (dr === -1 && currentCell.walls.top) return;
-    if (dr === 1 && currentCell.walls.bottom) return;
-    if (dc === -1 && currentCell.walls.left) return;
-    if (dc === 1 && currentCell.walls.right) return;
+    
+    const isBlocked = (dr === -1 && currentCell.walls.top) ||
+                    (dr === 1 && currentCell.walls.bottom) ||
+                    (dc === -1 && currentCell.walls.left) ||
+                    (dc === 1 && currentCell.walls.right);
+
+    if (isBlocked) {
+        triggerVibrate([20, 30]); // Vibración de colisión sorda
+        return;
+    }
 
     const nr = r + dr;
     const nc = c + dc;
     if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
       setPlayerPos({ r: nr, c: nc });
-      triggerVibrate(15);
+      triggerVibrate(15); // Feedback de movimiento fluido
       if (nr === targetPos.r && nc === targetPos.c) {
-        triggerVibrate([50, 30, 50]);
-        const points = size * 15;
+        triggerVibrate([40, 30, 80]);
+        const points = size * (difficulty === 'master' ? 50 : 20);
         setTotalScore(s => s + points);
         setLevel(l => l + 1);
-        if (size < 22) setSize(s => s + 1);
-        else generateMaze(size);
+        
+        if (difficulty === 'master') {
+            generateMaze(size);
+        } else {
+            if (size < 20) setSize(s => s + 1);
+            else generateMaze(size);
+        }
       }
     }
   };
@@ -117,76 +126,59 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
     return () => window.removeEventListener('keydown', handleKey);
   }, [playerPos, maze, size]);
 
+  const DPadButton = ({ onClick, children, className }: any) => (
+    <button 
+      onPointerDown={(e) => { e.preventDefault(); onClick(); }}
+      className={`h-20 rounded-[2rem] bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:translate-y-2 active:border-b-0 active:bg-indigo-600 transition-all shadow-xl shadow-black/40 ${className}`}
+    >
+      {children}
+    </button>
+  );
+
   return (
     <div className="flex flex-col items-center justify-between h-full p-4 select-none touch-none">
       <div className="flex justify-between w-full max-w-xs text-lg font-bold mb-4">
-        <span className="text-teal-400 font-black">Lvl: {level}</span>
-        <span className="text-yellow-500 font-black italic">{totalScore.toLocaleString()} pts</span>
+        <span className="text-teal-400 font-black uppercase text-xs tracking-widest">Nivel {level}</span>
+        <span className="text-indigo-400 font-black italic">{totalScore.toLocaleString()} pts</span>
       </div>
 
       <div 
-        className="grid gap-0 bg-slate-950 border-4 p-1 rounded-2xl shadow-2xl relative"
+        className="grid gap-0 bg-slate-950 border-4 border-slate-800 p-1 rounded-[2.5rem] shadow-2xl relative overflow-hidden"
         style={{ 
           gridTemplateColumns: `repeat(${size}, 1fr)`,
-          width: 'min(75vw, 360px)',
-          height: 'min(75vw, 360px)'
+          width: 'min(85vw, 360px)',
+          height: 'min(85vw, 360px)'
         }}
       >
         {maze.flat().map((cell, idx) => (
           <div 
             key={idx}
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center transition-all duration-300"
             style={{
-              borderTopWidth: cell.walls.top ? 1 : 0,
-              borderRightWidth: cell.walls.right ? 1 : 0,
-              borderBottomWidth: cell.walls.bottom ? 1 : 0,
-              borderLeftWidth: cell.walls.left ? 1 : 0,
+              borderTopWidth: cell.walls.top ? (size > 15 ? 0.5 : 1) : 0,
+              borderRightWidth: cell.walls.right ? (size > 15 ? 0.5 : 1) : 0,
+              borderBottomWidth: cell.walls.bottom ? (size > 15 ? 0.5 : 1) : 0,
+              borderLeftWidth: cell.walls.left ? (size > 15 ? 0.5 : 1) : 0,
               borderColor: '#334155'
             }}
           >
             {playerPos.r === cell.r && playerPos.c === cell.c && (
-              <div className="w-full h-full rounded-sm bg-teal-500 shadow-[0_0_12px_#14b8a6] scale-90 z-20" />
+              <div className="w-full h-full rounded-sm bg-indigo-500 shadow-[0_0_15px_#6366f1] scale-90 z-20 animate-pulse" />
             )}
             {targetPos.r === cell.r && targetPos.c === cell.c && (
-              <div className="text-[12px] animate-pulse z-10">🏁</div>
+              <div className="w-full h-full rounded-sm bg-emerald-500 shadow-[0_0_15px_#10b981] opacity-50 z-10" />
             )}
           </div>
         ))}
       </div>
 
-      {/* D-PAD TÁCTIL ERGONÓMICO OPTIMIZADO */}
-      <div className="grid grid-cols-3 gap-2 w-full max-w-[280px] mt-8">
+      <div className="grid grid-cols-3 gap-3 w-full max-w-[340px] mt-6 px-2">
         <div />
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); movePlayer(-1, 0); }}
-          className="h-20 rounded-3xl bg-slate-800/90 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:translate-y-2 active:border-b-0 active:bg-teal-600 transition-all shadow-xl"
-          aria-label="Arriba"
-        >
-          ↑
-        </button>
+        <DPadButton onClick={() => movePlayer(-1, 0)}>↑</DPadButton>
         <div />
-        
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); movePlayer(0, -1); }}
-          className="h-20 rounded-3xl bg-slate-800/90 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:translate-y-2 active:border-b-0 active:bg-teal-600 transition-all shadow-xl"
-          aria-label="Izquierda"
-        >
-          ←
-        </button>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); movePlayer(1, 0); }}
-          className="h-20 rounded-3xl bg-slate-800/90 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:translate-y-2 active:border-b-0 active:bg-teal-600 transition-all shadow-xl"
-          aria-label="Abajo"
-        >
-          ↓
-        </button>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); movePlayer(0, 1); }}
-          className="h-20 rounded-3xl bg-slate-800/90 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:translate-y-2 active:border-b-0 active:bg-teal-600 transition-all shadow-xl"
-          aria-label="Derecha"
-        >
-          →
-        </button>
+        <DPadButton onClick={() => movePlayer(0, -1)}>←</DPadButton>
+        <DPadButton onClick={() => movePlayer(1, 0)}>↓</DPadButton>
+        <DPadButton onClick={() => movePlayer(0, 1)}>→</DPadButton>
       </div>
     </div>
   );

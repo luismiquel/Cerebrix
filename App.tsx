@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameMetadata, UserStats, DifficultyLevel } from './types';
-import { GAME_REGISTRY } from './constants';
+import { GameMetadata, UserStats, DifficultyLevel, Achievement, DynamicAchievement } from './types';
+import { GAME_REGISTRY, ACHIEVEMENTS, DYNAMIC_ACHIEVEMENTS } from './constants';
 import GameContainer from './components/GameContainer';
 import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import GameGrid from './components/GameGrid';
 import ActivityDetail from './components/ActivityDetail';
 import Settings from './components/Settings';
+import AchievementToast from './components/AchievementToast';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'home' | 'games' | 'activity' | 'settings'>('games');
+  const [view, setView] = useState<'home' | 'games' | 'activity' | 'settings'>('home');
   const [selectedGame, setSelectedGame] = useState<GameMetadata | null>(null);
   const [isChallengeActive, setIsChallengeActive] = useState(false);
+  const [activeAchievement, setActiveAchievement] = useState<Achievement | null>(null);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('cerebrix_theme') as 'dark' | 'light') || 'dark';
@@ -53,32 +55,7 @@ const App: React.FC = () => {
     }
   });
 
-  const getGameOfTheDay = useCallback(() => {
-    const today = new Date().toDateString();
-    const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const index = seed % GAME_REGISTRY.length;
-    return GAME_REGISTRY[index];
-  }, []);
-
-  const startDailyChallenge = () => {
-    const today = new Date().toDateString();
-    const game = getGameOfTheDay();
-    
-    setStats(prev => {
-      const currentChallenge = prev.dailyChallenge;
-      if (!currentChallenge || currentChallenge.date !== today) {
-        return {
-          ...prev,
-          dailyChallenge: { date: today, gameId: game.id, screensCompleted: 0, isFinished: false }
-        };
-      }
-      return prev;
-    });
-    
-    setSelectedGame(game);
-    setIsChallengeActive(true);
-  };
-
+  // Guardar configuración y stats cada vez que cambian
   useEffect(() => {
     localStorage.setItem('cerebrix_stats', JSON.stringify(stats));
     localStorage.setItem('cerebrix_theme', theme);
@@ -90,58 +67,95 @@ const App: React.FC = () => {
     else root.classList.remove('dark');
   }, [stats, theme, isSeniorMode, globalDifficulty]);
 
+  const checkAchievements = useCallback((updatedStats: UserStats, lastScore: number) => {
+    const allAvailable = [...ACHIEVEMENTS, ...DYNAMIC_ACHIEVEMENTS];
+    const newlyUnlocked: Achievement[] = [];
+
+    allAvailable.forEach(ach => {
+      if (!updatedStats.unlockedAchievements.includes(ach.id)) {
+        if (ach.condition(updatedStats, lastScore)) {
+          newlyUnlocked.push(ach);
+        }
+      }
+    });
+
+    if (newlyUnlocked.length > 0) {
+      setStats(prev => ({
+        ...prev,
+        unlockedAchievements: [...prev.unlockedAchievements, ...newlyUnlocked.map(a => a.id)],
+        totalScore: prev.totalScore + newlyUnlocked.reduce((acc, a) => acc + a.bonusPoints, 0)
+      }));
+      // Mostramos el primero si hay varios, para no saturar
+      setActiveAchievement(newlyUnlocked[0]);
+    }
+  }, []);
+
   const handleGameOver = (score: number, levelCompleted: boolean = true) => {
     if (!selectedGame) return;
     
     const todayISO = new Date().toISOString().split('T')[0];
     const isNewDay = stats.lastPlayedDate !== todayISO;
 
-    setStats(prev => {
-      let dailyUpdate = prev.dailyChallenge || { date: '', gameId: '', screensCompleted: 0, isFinished: false };
-      let finalScore = score;
-      let shouldExitGame = true;
+    let dailyUpdate = stats.dailyChallenge || { date: '', gameId: '', screensCompleted: 0, isFinished: false };
+    let finalScore = score;
+    let shouldExitGame = true;
 
-      if (isChallengeActive) {
-        if (levelCompleted) {
-          const newCount = (dailyUpdate.screensCompleted || 0) + 1;
-          const finished = newCount >= 3;
-          
-          dailyUpdate = {
-            ...dailyUpdate,
-            screensCompleted: newCount,
-            isFinished: finished
-          };
-
-          if (finished) {
-            finalScore += 5000;
-            shouldExitGame = true;
-          } else {
-            shouldExitGame = false;
-          }
-        } else {
-          shouldExitGame = true;
-          alert("¡Casi! No has superado esta ronda del reto. Inténtalo de nuevo.");
-        }
-      }
-
-      const updated = {
-        ...prev,
-        gamesPlayed: prev.gamesPlayed + 1,
-        totalScore: prev.totalScore + finalScore,
-        lastPlayedDate: todayISO,
-        dailyStreak: isNewDay ? prev.dailyStreak + 1 : prev.dailyStreak,
-        daysPlayedCount: isNewDay ? prev.daysPlayedCount + 1 : prev.daysPlayedCount,
-        dailyChallenge: dailyUpdate,
-        history: [{ date: new Date().toISOString(), score: finalScore, gameId: selectedGame.id }, ...prev.history].slice(0, 50)
-      };
-
-      if (shouldExitGame) {
+    if (isChallengeActive) {
+      if (levelCompleted) {
+        const newCount = (dailyUpdate.screensCompleted || 0) + 1;
+        const finished = newCount >= 3;
+        dailyUpdate = { ...dailyUpdate, screensCompleted: newCount, isFinished: finished };
+        if (finished) { finalScore += 5000; shouldExitGame = true; } 
+        else { shouldExitGame = false; }
+      } else {
+        shouldExitGame = true;
         setIsChallengeActive(false);
-        setSelectedGame(null);
       }
+    }
 
-      return updated;
-    });
+    const updatedCategoryScores = { ...stats.categoryScores };
+    const cat = selectedGame.category;
+    updatedCategoryScores[cat] = (updatedCategoryScores[cat] || 0) + finalScore;
+
+    const newHistoryEntry = { date: new Date().toISOString(), score: finalScore, gameId: selectedGame.id };
+    const updatedHistory = [newHistoryEntry, ...stats.history].slice(0, 50);
+
+    const updatedStats: UserStats = {
+      ...stats,
+      gamesPlayed: stats.gamesPlayed + 1,
+      totalScore: stats.totalScore + finalScore,
+      categoryScores: updatedCategoryScores,
+      lastPlayedDate: todayISO,
+      dailyStreak: isNewDay ? stats.dailyStreak + 1 : stats.dailyStreak,
+      daysPlayedCount: isNewDay ? stats.daysPlayedCount + 1 : stats.daysPlayedCount,
+      dailyChallenge: dailyUpdate,
+      history: updatedHistory
+    };
+
+    setStats(updatedStats);
+    checkAchievements(updatedStats, finalScore);
+
+    if (shouldExitGame) {
+      setIsChallengeActive(false);
+      setSelectedGame(null);
+    }
+  };
+
+  const startDailyChallenge = () => {
+    const today = new Date().toDateString();
+    // Obtener juego del día determinista
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash);
+    const index = Math.abs(hash) % GAME_REGISTRY.length;
+    const game = GAME_REGISTRY[index];
+    
+    setStats(prev => ({
+      ...prev,
+      dailyChallenge: prev.dailyChallenge?.date === today ? prev.dailyChallenge : { date: today, gameId: game.id, screensCompleted: 0, isFinished: false }
+    }));
+    
+    setSelectedGame(game);
+    setIsChallengeActive(true);
   };
 
   return (
@@ -171,12 +185,12 @@ const App: React.FC = () => {
             {view === 'home' && (
               <div className="space-y-8">
                 <Dashboard stats={stats} onStartChallenge={startDailyChallenge} />
-                <div className="glass rounded-[2rem] p-8 border-l-4 border-l-indigo-600 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                <div className="glass rounded-[2rem] p-8 border-l-4 border-l-indigo-600 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-white/5">
                   <div>
                     <h3 className="text-2xl font-black dark:text-white mb-1 uppercase tracking-tighter italic">Biblioteca Cerebrix</h3>
                     <p className="text-slate-500 text-sm">Entrenamiento cognitivo profesional en tu bolsillo.</p>
                   </div>
-                  <button onClick={() => setView('games')} className="px-10 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg hover:scale-105 transition-all uppercase tracking-widest text-xs">Ver Todos los Juegos</button>
+                  <button onClick={() => setView('games')} className="px-10 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs">Ver Todos los Juegos</button>
                 </div>
               </div>
             )}
@@ -199,6 +213,13 @@ const App: React.FC = () => {
           </>
         )}
       </main>
+
+      {activeAchievement && (
+        <AchievementToast 
+          achievement={activeAchievement} 
+          onClose={() => setActiveAchievement(null)} 
+        />
+      )}
 
       {!selectedGame && (
         <nav className="fixed bottom-0 left-0 right-0 glass border-t-2 border-slate-300 dark:border-slate-800 flex justify-around items-center px-4 py-3 md:hidden z-50">

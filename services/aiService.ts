@@ -1,128 +1,120 @@
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { GoogleGenAI, Type } from "@google/genai";
 
-const LOCAL_STORIES = [
-  {
-    story: "Ana encontró una llave antigua bajo el cerezo. Al girarla en la puerta del desván, un mundo de colores se abrió ante ella.",
-    question: "¿Dónde estaba la llave?",
-    options: ["Bajo un cerezo", "En el desván", "En su bolsillo"],
-    correctAnswer: "Bajo un cerezo"
-  },
-  {
-    story: "El capitán del barco divisó una isla que no aparecía en los mapas. Al desembarcar, descubrió que las piedras eran de cristal.",
-    question: "¿De qué eran las piedras?",
-    options: ["Oro", "Cristal", "Arena"],
-    correctAnswer: "Cristal"
-  },
-  {
-    story: "Marta compró un reloj en un mercadillo. Pronto descubrió que el reloj no marcaba las horas, sino los latidos del corazón de quien lo sostenía.",
-    question: "¿Qué medía realmente el reloj?",
-    options: ["El tiempo", "Los latidos", "La presión"],
-    correctAnswer: "Los latidos"
-  },
-  {
-    story: "En el pueblo de Sombras, los gatos brillan en la oscuridad. El pequeño Tomás adoptó uno que, además de brillar, podía hablar en susurros.",
-    question: "¿Qué característica especial tenía el gato de Tomás?",
-    options: ["Volaba", "Hablaba en susurros", "Cambiaba de color"],
-    correctAnswer: "Hablaba en susurros"
-  },
-  {
-    story: "Un robot llamado Bip fue enviado a Marte para plantar girasoles. Tras un año, el planeta rojo se volvió amarillo por las flores.",
-    question: "¿De qué color se volvió Marte?",
-    options: ["Rojo", "Verde", "Amarillo"],
-    correctAnswer: "Amarillo"
-  },
-  {
-    story: "Lucía encontró un libro cuyas páginas estaban en blanco, pero al leerlo en voz alta, las palabras aparecían como magia.",
-    question: "¿Cómo aparecían las palabras?",
-    options: ["Con tinta invisible", "Al leer en voz alta", "Con el calor"],
-    correctAnswer: "Al leer en voz alta"
-  },
-  {
-    story: "El panadero del reino hacía pan con harina de estrellas. Quien lo probaba, soñaba que podía volar durante toda la noche.",
-    question: "¿Con qué harina se hacía el pan?",
-    options: ["Trigo", "Maíz", "Estrellas"],
-    correctAnswer: "Estrellas"
-  },
-  {
-    story: "Un inventor creó un paraguas que, en lugar de proteger de la lluvia, creaba una pequeña nube personal que llovía chocolate.",
-    question: "¿De qué llovía el paraguas?",
-    options: ["Agua", "Caramelo", "Chocolate"],
-    correctAnswer: "Chocolate"
-  },
-  {
-    story: "En la biblioteca prohibida, los libros vuelan para evitar ser leídos por personas que no tienen corazón puro.",
-    question: "¿Por qué volaban los libros?",
-    options: ["Para jugar", "Para no ser leídos", "Para buscar luz"],
-    correctAnswer: "Para no ser leídos"
-  },
-  {
-    story: "El explorador Marco llegó a una cueva donde el eco respondía antes de que él hablara, como si conociera sus pensamientos.",
-    question: "¿Cuándo respondía el eco?",
-    options: ["Después de hablar", "Antes de hablar", "Nunca"],
-    correctAnswer: "Antes de hablar"
-  },
-  {
-    story: "Sofía plantó una semilla de plata en su jardín. Al mes, creció un árbol cuyas hojas eran monedas de diez céntimos.",
-    question: "¿De qué metal era la semilla?",
-    options: ["Oro", "Bronce", "Plata"],
-    correctAnswer: "Plata"
-  },
-  {
-    story: "Un dragón pequeño llamado Flama prefería comer cubitos de hielo en lugar de escupir fuego, por eso vivía en una nevera.",
-    question: "¿Dónde vivía el dragón?",
-    options: ["En un volcán", "En una nevera", "En un bosque"],
-    correctAnswer: "En una nevera"
+// Initialize the Google GenAI client using the API key from environment variables.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+/**
+ * Generates a creative riddle in Spanish using the Gemini model.
+ */
+export async function generateRiddle() {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: 'Genera un acertijo creativo en español con su respuesta corta y directa (una sola palabra si es posible).',
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          riddle: {
+            type: Type.STRING,
+            description: 'El texto del acertijo que se le presentará al usuario.',
+          },
+          answer: {
+            type: Type.STRING,
+            description: 'La solución del acertijo.',
+          }
+        },
+        required: ['riddle', 'answer'],
+        propertyOrdering: ['riddle', 'answer'],
+      },
+    },
+  });
+
+  try {
+    const text = response.text;
+    return JSON.parse(text || '{}');
+  } catch (e) {
+    console.error("Error generating riddle with Gemini:", e);
+    // Return a fallback riddle in case of error.
+    return { riddle: "¿Qué tiene ciudades pero no casas, montañas pero no árboles, y agua pero no peces?", answer: "Mapa" };
   }
-];
+}
 
-const LOCAL_RIDDLES = [
-  { riddle: "Soy alto cuando soy joven y bajo cuando soy viejo. ¿Qué soy?", answer: "Vela" },
-  { riddle: "¿Qué tiene ciudades, pero no casas; montañas, pero no árboles; y agua, pero no peces?", answer: "Mapa" },
-  { riddle: "Tengo agujeros arriba y abajo, pero aún así retengo el agua. ¿Qué soy?", answer: "Esponja" },
-  { riddle: "¿Qué sube pero nunca baja?", answer: "Edad" },
-  { riddle: "Te pertenezco, pero otros me usan más que tú. ¿Qué soy?", answer: "Nombre" },
-  { riddle: "Si me nombras, me rompes. ¿Qué soy?", answer: "Silencio" },
-  { riddle: "¿Qué tiene cuello pero no cabeza?", answer: "Camisa" },
-  { riddle: "Corre pero no camina, murmura pero no habla. ¿Qué es?", answer: "Rio" },
-  { riddle: "Blanco por fuera, amarillo por dentro. Si quieres que te lo diga, espera.", answer: "Huevo" },
-  { riddle: "Cinco hermanos muy unidos que no se pueden separar.", answer: "Dedos" },
-  { riddle: "Tengo llaves pero no cerraduras. Tengo espacio pero no cuarto. Puedes entrar, pero no salir. ¿Qué soy?", answer: "Teclado" },
-  { riddle: "Cuanto más hay, menos ves. ¿Qué soy?", answer: "Oscuridad" },
-  { riddle: "Vuelo sin alas, lloro sin ojos. ¿Qué soy?", answer: "Nube" },
-  { riddle: "Siempre estoy en el futuro, pero nunca llego. ¿Qué soy?", answer: "Mañana" }
-];
+/**
+ * Uses Gemini Pro to determine the best chess move based on the current board position (FEN).
+ */
+export async function getBestChessMove(fen: string, possibleMoves: string[]) {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: `Actúa como un Gran Maestro de Ajedrez experto. FEN actual: ${fen}. Los movimientos legales son: ${possibleMoves.join(', ')}. ¿Cuál es el mejor movimiento? Responde estrictamente con el movimiento en notación algebraica estándar (ej: e4, Nf3, O-O). No incluyas explicaciones.`,
+  });
 
-export const generateRiddle = async () => {
-  await delay(300);
-  return LOCAL_RIDDLES[Math.floor(Math.random() * LOCAL_RIDDLES.length)];
-};
+  const suggestedMove = response.text?.trim() || '';
+  
+  // Validate the suggested move against the provided list of possible moves.
+  if (possibleMoves.includes(suggestedMove)) {
+    return suggestedMove;
+  }
+  
+  // Fallback: try case-insensitive match for robustness.
+  const match = possibleMoves.find(m => m.toLowerCase() === suggestedMove.toLowerCase());
+  if (match) return match;
 
-export const generateStoryChallenge = async () => {
-  await delay(400);
-  return LOCAL_STORIES[Math.floor(Math.random() * LOCAL_STORIES.length)];
-};
+  // Final fallback to the first possible move if the model returns an invalid string.
+  return possibleMoves[0];
+}
 
-export const evaluateArtPrompt = async (prompt: string) => {
-  await delay(500);
-  const score = Math.min(100, prompt.length * 2 + Math.floor(Math.random() * 30));
-  return { score, feedback: score > 70 ? "¡Gran descripción visual!" : "Añade más detalles la próxima vez." };
-};
+/**
+ * Generates a complete crossword puzzle including the grid and clues using the Gemini model.
+ */
+export async function generateCrossword() {
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: 'Genera un crucigrama de 5x5 en español de alta calidad. El grid debe ser un array de 5 strings, cada uno de exactamente 5 caracteres. Usa el carácter "#" para representar las casillas bloqueadas. Asegúrate de que las palabras sean reales y las pistas sean precisas.',
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          grid: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: 'El tablero de 5x5 representado como un array de strings.',
+          },
+          clues: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                direction: { type: Type.STRING, description: 'Horizontal o Vertical' },
+                text: { type: Type.STRING, description: 'La pista para la palabra correspondiente.' }
+              },
+              required: ['id', 'direction', 'text']
+            }
+          }
+        },
+        required: ['grid', 'clues'],
+        propertyOrdering: ['grid', 'clues'],
+      },
+    },
+  });
 
-export const getBestChessMove = async (fen: string, possibleMoves: string[]) => {
-  await delay(200);
-  return possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-};
-
-export const generateCrossword = async () => {
-  await delay(500);
-  return {
-    grid: ["GATO#", "O#R#S", "LUNA#", "#A#L#", "MESA#"],
-    clues: [
-      { id: "1", direction: "Horizontal", text: "Felino doméstico" },
-      { id: "3", direction: "Horizontal", text: "Satélite terrestre" },
-      { id: "5", direction: "Horizontal", text: "Mueble para comer" },
-      { id: "1", direction: "Vertical", text: "Goles (inv)" }
-    ]
-  };
-};
+  try {
+    const text = response.text;
+    return JSON.parse(text || '{}');
+  } catch (e) {
+    console.error("Error generating crossword with Gemini:", e);
+    // Fallback crossword data for the 5x5 grid.
+    return {
+      grid: ["GATO#", "O#R#S", "LUNA#", "#A#L#", "MESA#"],
+      clues: [
+        { id: "1", direction: "Horizontal", text: "Felino doméstico común" },
+        { id: "3", direction: "Horizontal", text: "Satélite natural de la Tierra" },
+        { id: "5", direction: "Horizontal", text: "Mueble principal donde se sirven las comidas" },
+        { id: "1", direction: "Vertical", text: "Tantos anotados en un partido (al revés)" }
+      ]
+    };
+  }
+}

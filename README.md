@@ -1,25 +1,12 @@
 
-# Cerebrix - Entrena tu Mente
+# Cerebrix - Ecosistema de Entrenamiento Mental
 
-Plataforma profesional de entrenamiento cognitivo con más de 20 juegos diseñados para mejorar la memoria, la lógica, el cálculo y la atención.
+Plataforma privada de gimnasia cerebral con 40 juegos cognitivos de alto rendimiento.
 
-**Hecho por Luis Miguel Garcia de las morenas**
+## Características
+* **Privacidad Total**: No utiliza APIs externas, IA ni servidores. Todo el procesamiento es local.
+* **40 Juegos**: Divididos en Lógica, Memoria, Cálculo, Atención y Lenguaje.
+* **Modo Senior**: Interfaz optimizada para máxima legibilidad y contraste.
+* **Dificultad Adaptativa**: Desde principiante hasta nivel Maestro.
 
-## Instrucciones de Ejecución
-
-Este proyecto contiene todo lo necesario para ejecutarse localmente.
-
-### Prerrequisitos
-* Node.js (versión 18 o superior recomendada)
-
-### Pasos para empezar
-1.  **Instalar dependencias:**
-    `npm install`
-2.  **Configurar Clave API:**
-    Crea un archivo `.env.local` y añade tu clave de API:
-    `API_KEY=tu_clave_aqui`
-3.  **Ejecutar la aplicación:**
-    `npm run dev`
-
----
-© 2025 Cerebrix. Todos los derechos reservados.
+**Desarrollado de forma local para Cerebrix.**

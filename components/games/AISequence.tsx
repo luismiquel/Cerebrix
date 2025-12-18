@@ -13,7 +13,7 @@ const COLORS = [
   { id: 7, name: 'Orange', hex: '#f97316' }
 ];
 
-const AISequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
+const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [sequence, setSequence] = useState<number[]>([]);
@@ -31,7 +31,7 @@ const AISequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
 
   const playSequence = useCallback(async (seq: number[]) => {
     setGameState('memorizing');
-    setMessage('OBSERVA...');
+    setMessage('OBSERVA EL PATRÓN');
     let displayTime = 600;
     let gapTime = 400;
     if (difficulty === 'master') { displayTime = 250; gapTime = 100; }
@@ -41,7 +41,6 @@ const AISequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     for (let i = 0; i < seq.length; i++) {
       const padId = seq[i];
       setActivePad(padId);
-      // Vibración tonal: los pads superiores vibran más corto, los inferiores más largo
       triggerVibrate(15 + (padId * 5)); 
       await new Promise(r => setTimeout(r, displayTime));
       setActivePad(null);
@@ -98,8 +97,8 @@ const AISequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   return (
     <div className="flex flex-col items-center justify-center gap-10 p-4 select-none touch-none h-full">
       <div className="flex justify-between w-full max-w-sm px-4">
-        <span className="text-purple-400 font-black text-2xl">{score.toLocaleString()}</span>
-        <span className="text-white font-black text-2xl">Lvl {level}</span>
+        <span className="text-purple-400 font-black text-2xl italic tracking-tighter">{score.toLocaleString()}</span>
+        <span className="text-white font-black text-2xl italic tracking-tighter">LVL {level}</span>
       </div>
 
       <div className="relative w-full aspect-square max-w-[340px] flex items-center justify-center">
@@ -108,7 +107,6 @@ const AISequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
         {activePads.map((pad, idx) => {
           const angle = (idx * (360 / padCount)) - 90;
           const isActive = activePad === pad.id;
-          // Ergonómico: más grandes en móvil
           const padSize = padCount > 6 ? 'w-24 h-24' : 'w-28 h-28';
           
           return (
@@ -137,11 +135,11 @@ const AISequence: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
         </div>
       </div>
 
-      <p className="text-xs text-slate-500 font-black uppercase tracking-widest text-center max-w-xs mt-4 h-4">
+      <p className="text-xs text-slate-500 font-black uppercase tracking-widest text-center max-w-xs mt-4 h-4 italic">
         {gameState === 'failed' ? 'ERROR' : gameState === 'success' ? '¡GENIAL!' : message}
       </p>
     </div>
   );
 };
 
-export default AISequence;
+export default PatternMaster;

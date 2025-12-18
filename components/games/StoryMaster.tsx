@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameProps } from '../../types';
-import { generateStoryChallenge } from '../../services/geminiService';
+import { generateStoryChallenge } from '../../services/aiService';
 
 const StoryMaster: React.FC<GameProps> = ({ onGameOver, isDailyChallenge, currentRound = 1 }) => {
-  // Ajustado a 10 preguntas fijas como solicitó el usuario para una ronda completa
   const TARGET = 10; 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{ story: string, question: string, options: string[], correctAnswer: string } | null>(null);
@@ -39,7 +38,6 @@ const StoryMaster: React.FC<GameProps> = ({ onGameOver, isDailyChallenge, curren
       const newCorrectCount = correctCount + 1;
       setScore(s => s + 200);
       
-      // Pequeño delay para que el usuario vea el feedback antes de pasar o terminar
       setTimeout(() => {
         if (newCorrectCount >= TARGET) {
           onGameOver(score + 200, true);
@@ -50,7 +48,6 @@ const StoryMaster: React.FC<GameProps> = ({ onGameOver, isDailyChallenge, curren
       }, 1000);
     } else {
       setFeedback('wrong');
-      // En Reto Diario, un fallo te obliga a repetir la ronda desde 0
       setTimeout(() => onGameOver(score, false), 1500);
     }
   };

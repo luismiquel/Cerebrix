@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameProps } from '../../types';
-import { generateRiddle } from '../../services/geminiService';
+import { generateRiddle } from '../../services/aiService';
 
 const AIRiddle: React.FC<GameProps> = ({ onGameOver, fontSize }) => {
   const [data, setData] = useState<{ riddle: string, answer: string } | null>(null);
@@ -47,10 +47,8 @@ const AIRiddle: React.FC<GameProps> = ({ onGameOver, fontSize }) => {
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!data || status !== 'playing' || !input.trim()) return;
-
     const userAnswer = normalize(input);
     const correctAnswer = normalize(data.answer);
-
     if (userAnswer === correctAnswer || userAnswer.includes(correctAnswer)) {
       setStatus('solved');
       const points = 100 + (streak * 10);
@@ -83,7 +81,6 @@ const AIRiddle: React.FC<GameProps> = ({ onGameOver, fontSize }) => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto p-6 space-y-8 animate-in fade-in duration-500">
-      
       <div className="flex justify-between w-full items-end border-b border-white/10 pb-4">
         <div className="flex flex-col">
           <span className="text-xs uppercase text-slate-500 font-bold tracking-widest">Puntuación</span>
@@ -96,7 +93,6 @@ const AIRiddle: React.FC<GameProps> = ({ onGameOver, fontSize }) => {
           </div>
         </div>
       </div>
-
       <div className="flex-1 flex flex-col justify-center w-full space-y-6">
         {loading ? (
           <div className="flex flex-col items-center gap-4 py-12">
@@ -110,15 +106,9 @@ const AIRiddle: React.FC<GameProps> = ({ onGameOver, fontSize }) => {
             </p>
           </div>
         )}
-
         <div className="h-8 flex items-center justify-center">
-          {feedback && (
-            <span className={`font-bold uppercase tracking-widest ${feedback.includes('Acierto') ? 'text-emerald-400' : 'text-rose-400'} ${fontSize === 'large' ? 'text-lg' : ''}`}>
-              {feedback}
-            </span>
-          )}
+          {feedback && <span className={`font-bold uppercase tracking-widest ${feedback.includes('Acierto') ? 'text-emerald-400' : 'text-rose-400'} ${fontSize === 'large' ? 'text-lg' : ''}`}>{feedback}</span>}
         </div>
-
         <form onSubmit={handleSubmit} className="w-full relative">
           <input
             type="text"
@@ -129,30 +119,11 @@ const AIRiddle: React.FC<GameProps> = ({ onGameOver, fontSize }) => {
             className={`w-full bg-slate-900 border-2 border-slate-700 rounded-2xl py-4 pl-6 pr-16 text-white outline-none transition-all ${fontSize === 'large' ? 'text-2xl' : 'text-lg'}`}
             autoFocus
           />
-          <button
-            type="submit"
-            disabled={status !== 'playing' || !input.trim()}
-            className="absolute right-2 top-2 bottom-2 aspect-square bg-cyan-600 rounded-xl flex items-center justify-center text-white disabled:opacity-50"
-          >
-            ➜
-          </button>
+          <button type="submit" disabled={status !== 'playing' || !input.trim()} className="absolute right-2 top-2 bottom-2 aspect-square bg-cyan-600 rounded-xl flex items-center justify-center text-white disabled:opacity-50">➜</button>
         </form>
-
         <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={handleSkip}
-            disabled={status !== 'playing'}
-            className="py-3 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs uppercase tracking-widest"
-          >
-            Saltar (-20)
-          </button>
-          <button
-            onClick={handleReveal}
-            disabled={status !== 'playing'}
-            className="py-3 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs uppercase tracking-widest"
-          >
-            Revelar (-50)
-          </button>
+          <button onClick={handleSkip} disabled={status !== 'playing'} className="py-3 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs uppercase tracking-widest">Saltar (-20)</button>
+          <button onClick={handleReveal} disabled={status !== 'playing'} className="py-3 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs uppercase tracking-widest">Revelar (-50)</button>
         </div>
       </div>
     </div>

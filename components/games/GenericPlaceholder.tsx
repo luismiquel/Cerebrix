@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameMetadata, GameProps } from '../../types';
-import { generateRiddle } from '../../services/geminiService';
+import { generateRiddle } from '../../services/aiService';
 
 interface Props extends GameProps {
   game: GameMetadata;

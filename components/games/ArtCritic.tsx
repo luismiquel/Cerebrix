@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { GameProps } from '../../types';
-import { evaluateArtPrompt } from '../../services/geminiService';
+import { evaluateArtPrompt } from '../../services/aiService';
 import AIImage from '../AIImage';
 
 const ArtCritic: React.FC<GameProps> = ({ onGameOver }) => {
@@ -46,7 +46,7 @@ const ArtCritic: React.FC<GameProps> = ({ onGameOver }) => {
         </div>
 
         <div className="text-center space-y-2 max-w-xs">
-          <h4 className="text-teal-400 font-bold uppercase tracking-widest text-xs">Análisis de la IA</h4>
+          <h4 className="text-teal-400 font-bold uppercase tracking-widest text-xs">Análisis</h4>
           <p className="text-slate-200 font-medium italic">"{result.feedback}"</p>
         </div>
 
@@ -94,7 +94,7 @@ const ArtCritic: React.FC<GameProps> = ({ onGameOver }) => {
               : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:scale-105 active:scale-95'
           }`}
         >
-          {isGenerating ? '🎨 Analizando Estética...' : '✨ GENERAR ARTE'}
+          {isGenerating ? '🎨 Analizando...' : '✨ GENERAR ARTE'}
         </button>
       </div>
 
@@ -104,7 +104,7 @@ const ArtCritic: React.FC<GameProps> = ({ onGameOver }) => {
           <span className="text-xl font-bold text-white">{totalScore}</span>
         </div>
         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-          <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Bonus IA</span>
+          <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Bonus</span>
           <span className="text-xl font-bold text-teal-400">+10%</span>
         </div>
       </div>

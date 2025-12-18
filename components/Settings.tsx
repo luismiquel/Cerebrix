@@ -71,7 +71,7 @@ const Settings: React.FC<Props> = ({
         <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-4xl mb-4 shadow-xl border-4 border-white dark:border-slate-700 z-10 overflow-hidden relative">
           <Logo className="w-full h-full" />
         </div>
-        <h2 className="text-3xl font-black text-slate-800 dark:text-white uppercase italic tracking-tighter z-10 leading-tight">CEREBRIX</h2>
+        <h2 className="text-3xl font-black text-slate-800 dark:text-white uppercase italic tracking-tighter z-10 leading-none">CEREBRIX</h2>
         <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest z-10">Mente Maestra</span>
         
         <div className="flex gap-4 mt-6 z-10 w-full justify-center flex-wrap">
@@ -292,8 +292,8 @@ const Settings: React.FC<Props> = ({
           Borrar Historial
         </button>
         <div className="flex flex-col items-center text-center">
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-tighter mb-1">CEREBRIX v2.6</p>
-            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">Hecho por Luis Miguel Garcia de las morenas</p>
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-tighter mb-1">CEREBRIX © 2025</p>
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest italic">Gimnasia Mental para todos</p>
         </div>
       </div>
     </div>

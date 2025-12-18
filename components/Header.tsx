@@ -30,7 +30,7 @@ const Header: React.FC<Props> = ({ stats, theme, onToggleTheme, onOpenSettings, 
               CEREBRIX
             </h1>
             <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 hidden md:block uppercase tracking-widest mt-0.5">
-              Por Luis Miguel García
+              Entrenamiento Cognitivo Profesional
             </span>
           </div>
         </button>

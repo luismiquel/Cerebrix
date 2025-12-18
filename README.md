@@ -1,12 +1,11 @@
 
-# Cerebrix - Ecosistema de Entrenamiento Mental
+# Cerebrix
 
-Plataforma privada de gimnasia cerebral con 40 juegos cognitivos de alto rendimiento.
+Plataforma privada de entrenamiento cognitivo con 40 juegos únicos.
 
 ## Características
-* **Privacidad Total**: No utiliza APIs externas, IA ni servidores. Todo el procesamiento es local.
-* **40 Juegos**: Divididos en Lógica, Memoria, Cálculo, Atención y Lenguaje.
-* **Modo Senior**: Interfaz optimizada para máxima legibilidad y contraste.
-* **Dificultad Adaptativa**: Desde principiante hasta nivel Maestro.
+* **Privacidad**: Procesamiento 100% local.
+* **Diversidad**: Juegos de Lógica, Memoria, Cálculo, Atención y Lenguaje.
+* **Adaptabilidad**: Modo Senior y niveles de dificultad escalables.
 
-**Desarrollado de forma local para Cerebrix.**
+© 2025 Cerebrix. Todos los derechos reservados.

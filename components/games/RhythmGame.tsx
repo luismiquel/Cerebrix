@@ -58,7 +58,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
   }, [timeLeft, score, isDailyChallenge, TARGET_SCORE, onGameOver]);
 
   const handleAction = (lane: number) => {
-    // Feedback visual inmediato en el carril
+    // Feedback visual inmediato en el carril con brillo explosivo
     setLaneFlash(prev => { const n = [...prev]; n[lane] = true; return n; });
     setTimeout(() => setLaneFlash(prev => { const n = [...prev]; n[lane] = false; return n; }), 150);
     
@@ -73,11 +73,11 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         const precision = Math.abs(prev[targetIdx].top - 85);
         if (precision < perfectThreshold) {
             setLastHitStatus('¡PERFECTO!');
-            triggerVibrate([35, 15, 35]); // Vibración rítmica doble para perfecto
+            triggerVibrate([30, 20, 30]); // Vibración rítmica doble para perfecto
             setScore(s => s + Math.round(150 * scoreMult));
         } else {
             setLastHitStatus('BIEN');
-            triggerVibrate(25); // Vibración simple para acierto
+            triggerVibrate(25); // Vibración simple firme para acierto
             setScore(s => s + Math.round(75 * scoreMult));
         }
         setTimeout(() => setLastHitStatus(null), 400);
@@ -86,7 +86,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         updated[targetIdx].top = 200; 
         return updated;
       } else {
-        triggerVibrate(10); // Vibración mínima para toque fallido
+        triggerVibrate(15); // Vibración sutil para toque fallido
       }
       return prev;
     });
@@ -109,8 +109,12 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         {LANES.map(l => (
             <div 
               key={l} 
-              className={`absolute h-full w-[25%] transition-opacity duration-150 ${laneFlash[l] ? 'opacity-40' : 'opacity-0'}`} 
-              style={{ left: `${l*25}%`, background: `linear-gradient(to top, ${LANE_COLORS[l]}, transparent)` }} 
+              className={`absolute h-full w-[25%] transition-opacity duration-150 ${laneFlash[l] ? 'opacity-50' : 'opacity-0'}`} 
+              style={{ 
+                left: `${l*25}%`, 
+                background: `linear-gradient(to top, ${LANE_COLORS[l]}, transparent)`,
+                boxShadow: laneFlash[l] ? `inset 0 -100px 100px -50px ${LANE_COLORS[l]}` : 'none'
+              }} 
             />
         ))}
         
@@ -119,7 +123,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
 
         {lastHitStatus && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-                <span className={`text-5xl md:text-7xl font-black italic uppercase animate-ping ${lastHitStatus === '¡PERFECTO!' ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.8)]' : 'text-white'}`}>
+                <span className={`text-5xl md:text-7xl font-black italic uppercase animate-ping ${lastHitStatus === '¡PERFECTO!' ? 'text-yellow-400 drop-shadow-[0_0_25px_rgba(251,191,36,0.9)]' : 'text-white'}`}>
                     {lastHitStatus}
                 </span>
             </div>
@@ -134,21 +138,21 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
                 left: `${(n.lane*25)+1.5}%`, 
                 backgroundColor: LANE_COLORS[n.lane], 
                 boxShadow: `0 0 25px ${LANE_COLORS[n.lane]}`,
-                transform: `scale(${n.top > 82 && n.top < 88 ? 1.4 : 1})`
+                transform: `scale(${n.top > 82 && n.top < 88 ? 1.5 : 1})`
             }} 
           />
         ))}
       </div>
 
-      <div className="grid grid-cols-4 gap-4 md:gap-6 w-full h-36 mt-8 px-2 pb-4">
+      <div className="grid grid-cols-4 gap-4 md:gap-6 w-full h-40 mt-8 px-2 pb-4">
         {LANES.map(l => (
           <button 
             key={l} 
             onPointerDown={(e) => { e.preventDefault(); handleAction(l); }} 
-            className={`h-full rounded-[2rem] bg-slate-800 border-b-[6px] border-slate-950 active:scale-90 active:translate-y-1 active:bg-slate-700 active:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all flex items-center justify-center shadow-lg touch-none`}
+            className={`h-full rounded-[2.5rem] bg-slate-800 border-b-[10px] border-slate-950 active:scale-90 active:translate-y-2 active:bg-slate-700 active:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all flex items-center justify-center shadow-lg touch-none`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 md:border-6 border-white/20" style={{ backgroundColor: LANE_COLORS[l], boxShadow: `0 0 25px ${LANE_COLORS[l]}55` }} />
+            <div className="w-14 h-14 md:w-18 md:h-18 rounded-full border-[6px] border-white/20" style={{ backgroundColor: LANE_COLORS[l], boxShadow: `0 0 30px ${LANE_COLORS[l]}66` }} />
           </button>
         ))}
       </div>

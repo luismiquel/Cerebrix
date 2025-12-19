@@ -75,7 +75,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     setGrid(filtered);
     
     if (cleared > 0) {
-        triggerVibrate([50, 40, 100]);
+        triggerVibrate([50, 40, 100]); // Vibración fuerte para líneas limpiadas
         setScore(s => s + (cleared * 100));
         setLinesCleared(l => {
             const total = l + cleared;
@@ -86,7 +86,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
             return total;
         });
     } else {
-        triggerVibrate(15);
+        triggerVibrate(20); // Vibración corta para bloqueo
     }
     spawn();
   }, [currentPiece, pos, grid, isDailyChallenge, score, onGameOver, spawn]);
@@ -107,7 +107,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     if (!currentPiece || gameOver) return;
     if (!checkCollision(currentPiece.shape, { x: pos.x + dx, y: pos.y }, grid)) {
       setPos(p => ({ ...p, x: p.x + dx }));
-      triggerVibrate(10);
+      triggerVibrate(15);
     } else {
       triggerVibrate([5, 10]);
     }
@@ -118,9 +118,9 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     const rotated = currentPiece.shape[0].map((_: any, i: number) => currentPiece.shape.map((row: any) => row[i]).reverse());
     if (!checkCollision(rotated, pos, grid)) {
       setCurrentPiece({ ...currentPiece, shape: rotated });
-      triggerVibrate(25);
+      triggerVibrate(35);
     } else {
-      triggerVibrate([5, 15]);
+      triggerVibrate([10, 20]);
     }
   };
 
@@ -131,14 +131,14 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
       tempY++;
     }
     setPos(p => ({ ...p, y: tempY }));
-    triggerVibrate([40, 20, 60]);
+    triggerVibrate([40, 20, 60]); // Vibración rítmica para bajada rápida
     lockPiece();
   };
 
   const ControlBtn = ({ onAction, children, className }: any) => (
     <button 
       onPointerDown={(e) => { e.preventDefault(); onAction(); }}
-      className={`rounded-2xl border-b-[6px] transition-all flex items-center justify-center select-none touch-none ${className}`}
+      className={`rounded-2xl border-b-[8px] transition-all flex items-center justify-center select-none touch-none active:translate-y-2 active:border-b-0 ${className}`}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {children}
@@ -177,11 +177,11 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
       <div className="w-full grid grid-cols-4 gap-3 px-2 mt-6 h-36">
         <ControlBtn 
           onAction={() => move(-1)}
-          className="bg-slate-800 border-slate-950 text-white text-4xl active:scale-90 active:bg-indigo-600 shadow-lg"
+          className="bg-slate-800 border-slate-950 text-white text-4xl active:bg-indigo-600 shadow-lg"
         >←</ControlBtn>
         <ControlBtn 
           onAction={() => rotate()}
-          className="col-span-2 bg-indigo-600 border-indigo-950 text-white active:scale-95 active:shadow-[0_0_20px_rgba(99,102,241,0.6)] shadow-xl"
+          className="col-span-2 bg-indigo-600 border-indigo-950 text-white shadow-xl active:shadow-[0_0_25px_rgba(99,102,241,0.6)]"
         >
           <div className="flex flex-col items-center">
             <span className="text-4xl leading-none">↻</span>
@@ -190,11 +190,11 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
         </ControlBtn>
         <ControlBtn 
           onAction={() => move(1)}
-          className="bg-slate-800 border-slate-950 text-white text-4xl active:scale-90 active:bg-indigo-600 shadow-lg"
+          className="bg-slate-800 border-slate-950 text-white text-4xl active:bg-indigo-600 shadow-lg"
         >→</ControlBtn>
         <ControlBtn 
           onAction={() => hardDrop()}
-          className="col-span-4 h-16 bg-emerald-600 border-emerald-900 text-white text-lg font-black uppercase tracking-widest italic active:scale-95 active:shadow-[0_0_20px_rgba(16,185,129,0.6)] shadow-xl"
+          className="col-span-4 h-16 bg-emerald-600 border-emerald-900 text-white text-lg font-black uppercase tracking-widest italic shadow-xl active:shadow-[0_0_20px_rgba(16,185,129,0.6)]"
         >BAJADA RÁPIDA (DROP)</ControlBtn>
       </div>
     </div>

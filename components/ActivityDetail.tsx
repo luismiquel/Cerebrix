@@ -37,7 +37,9 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    // Pequeño delay para asegurar que el DOM ha calculado las dimensiones
+    const timer = setTimeout(() => setIsClient(true), 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const sevenDaysAgo = new Date();
@@ -125,9 +127,9 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="glass rounded-[2rem] p-8 min-h-[350px] flex flex-col">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Actividad Semanal</h2>
-          <div className="h-64 w-full flex-1">
+          <div className="h-64 w-full">
             {isClient ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                 <AreaChart data={dailyHistory} onClick={handleChartClick}>
                   <defs>
                     <linearGradient id="colorPuntos" x1="0" y1="0" x2="0" y2="1">
@@ -148,9 +150,9 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
 
         <div className="glass rounded-[2rem] p-8 min-h-[350px] flex flex-col">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Especialización</h2>
-          <div className="h-64 w-full flex-1">
+          <div className="h-64 w-full">
             {isClient ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                 <BarChart data={gamePerformance} layout="vertical">
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={80} />

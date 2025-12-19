@@ -55,7 +55,6 @@ const App: React.FC = () => {
     }
   });
 
-  // Guardar configuración y stats cada vez que cambian
   useEffect(() => {
     localStorage.setItem('cerebrix_stats', JSON.stringify(stats));
     localStorage.setItem('cerebrix_theme', theme);
@@ -85,7 +84,6 @@ const App: React.FC = () => {
         unlockedAchievements: [...prev.unlockedAchievements, ...newlyUnlocked.map(a => a.id)],
         totalScore: prev.totalScore + newlyUnlocked.reduce((acc, a) => acc + a.bonusPoints, 0)
       }));
-      // Mostramos el primero si hay varios, para no saturar
       setActiveAchievement(newlyUnlocked[0]);
     }
   }, []);
@@ -105,11 +103,21 @@ const App: React.FC = () => {
         const newCount = (dailyUpdate.screensCompleted || 0) + 1;
         const finished = newCount >= 3;
         dailyUpdate = { ...dailyUpdate, screensCompleted: newCount, isFinished: finished };
-        if (finished) { finalScore += 5000; shouldExitGame = true; } 
-        else { shouldExitGame = false; }
+        
+        if (finished) { 
+          // Otorga 5000 puntos de bonus si completa las 3 rondas
+          finalScore += 5000; 
+          shouldExitGame = true; 
+        } 
+        else { 
+          // Permanece en el juego para la siguiente ronda del reto
+          shouldExitGame = false; 
+        }
       } else {
+        // El usuario ha fallado: finalizar el reto diario inmediatamente para él y cerrar el juego
         shouldExitGame = true;
         setIsChallengeActive(false);
+        dailyUpdate = { ...dailyUpdate, isFinished: true }; 
       }
     }
 
@@ -143,7 +151,6 @@ const App: React.FC = () => {
 
   const startDailyChallenge = () => {
     const today = new Date().toDateString();
-    // Obtener juego del día determinista
     let hash = 0;
     for (let i = 0; i < today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash);
     const index = Math.abs(hash) % GAME_REGISTRY.length;

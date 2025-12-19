@@ -26,6 +26,7 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
 
   const today = new Date().toDateString();
   const challengeDone = stats.dailyChallenge?.date === today && stats.dailyChallenge?.isFinished;
+  const challengeSuccess = challengeDone && (stats.dailyChallenge?.screensCompleted || 0) >= 3;
   const challengeProgress = stats.dailyChallenge?.date === today ? stats.dailyChallenge.screensCompleted : 0;
 
   return (
@@ -59,18 +60,22 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
         </div>
       </div>
 
-      <div className={`glass rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 shadow-2xl border-2 transition-all duration-500 ${challengeDone ? 'border-emerald-500 bg-emerald-500/10' : 'border-indigo-500/20'}`}>
+      <div className={`glass rounded-[2.5rem] p-8 flex flex-col justify-between space-y-6 shadow-2xl border-2 transition-all duration-500 ${challengeDone ? (challengeSuccess ? 'border-emerald-500 bg-emerald-500/10' : 'border-rose-500 bg-rose-500/10') : 'border-indigo-500/20'}`}>
         <div className="space-y-4">
           <div className="flex justify-between items-start">
             <h3 className="text-slate-500 dark:text-slate-400 font-black text-[10px] uppercase tracking-widest">Reto Diario</h3>
-            {challengeDone && <span className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black">HECHO</span>}
+            {challengeDone && <span className={`${challengeSuccess ? 'bg-emerald-500' : 'bg-rose-500'} text-white text-[10px] px-2 py-0.5 rounded-full font-black uppercase`}>{challengeSuccess ? 'Éxito' : 'Finalizado'}</span>}
           </div>
           
           {challengeDone ? (
             <div className="space-y-2 animate-in fade-in zoom-in duration-700 text-center py-4">
-              <span className="text-5xl">🏆</span>
-              <p className="text-2xl font-black text-emerald-500 italic uppercase">¡Completado!</p>
-              <p className="text-xs text-slate-500">Has ganado +5,000 puntos de bonus hoy.</p>
+              <span className="text-5xl">{challengeSuccess ? '🏆' : '📉'}</span>
+              <p className={`text-2xl font-black italic uppercase ${challengeSuccess ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {challengeSuccess ? '¡Completado!' : 'Reto Cerrado'}
+              </p>
+              <p className="text-xs text-slate-500">
+                {challengeSuccess ? 'Has ganado +5,000 puntos de bonus hoy.' : 'No has superado todas las rondas hoy.'}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -88,7 +93,7 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
                   />
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase italic text-center">Gana 3 niveles seguidos para completar</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase italic text-center">Supera 3 niveles sin fallar para ganar el bonus</p>
             </div>
           )}
         </div>
@@ -98,7 +103,7 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
           disabled={challengeDone}
           className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 ${challengeDone ? 'bg-slate-100 dark:bg-slate-800 text-slate-400' : 'bg-gradient-to-br from-indigo-600 to-emerald-500 text-white hover:shadow-indigo-500/30'}`}
         >
-          {challengeDone ? 'Vuelve Mañana' : challengeProgress > 0 ? 'Siguiente Ronda' : 'Empezar Reto'}
+          {challengeDone ? 'Vuelve Mañana' : challengeProgress > 0 ? 'Continuar Reto' : 'Empezar Reto'}
         </button>
       </div>
     </div>

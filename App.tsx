@@ -66,16 +66,22 @@ const AppContent: React.FC = () => {
     }
   });
 
+  // Efecto crítico para aplicar el tema al HTML
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('cerebrix_theme', theme);
+  }, [theme]);
+
   useEffect(() => {
     localStorage.setItem('cerebrix_stats', JSON.stringify(stats));
-    localStorage.setItem('cerebrix_theme', theme);
     localStorage.setItem('cerebrix_senior_mode', String(isSeniorMode));
     localStorage.setItem('cerebrix_difficulty', globalDifficulty);
-    
-    const root = window.document.documentElement;
-    if (theme === 'dark') root.classList.add('dark');
-    else root.classList.remove('dark');
-  }, [stats, theme, isSeniorMode, globalDifficulty]);
+  }, [stats, isSeniorMode, globalDifficulty]);
 
   const checkAchievements = useCallback((updatedStats: UserStats, lastScore: number) => {
     const allAvailable = [...ACHIEVEMENTS, ...DYNAMIC_ACHIEVEMENTS];
@@ -178,7 +184,7 @@ const AppContent: React.FC = () => {
   const isPlaying = location.pathname.startsWith('/game/');
 
   return (
-    <div className={`min-h-screen pb-24 md:pb-8 md:pt-20 ${isSeniorMode ? 'senior-mode-active' : ''}`}>
+    <div className={`min-h-screen pb-24 md:pb-8 md:pt-20 text-slate-900 dark:text-white ${isSeniorMode ? 'senior-mode-active' : ''}`}>
       <Header 
         stats={stats} 
         theme={theme} 
@@ -195,8 +201,8 @@ const AppContent: React.FC = () => {
               <Dashboard stats={stats} onStartChallenge={startDailyChallenge} />
               <div className="glass rounded-[2rem] p-8 border-l-4 border-l-indigo-600 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-white/5">
                 <div>
-                  <h3 className="text-2xl font-black dark:text-white mb-1 uppercase tracking-tighter italic">Biblioteca Cerebrix</h3>
-                  <p className="text-slate-500 text-sm">Entrenamiento cognitivo profesional en tu bolsillo.</p>
+                  <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter italic">Biblioteca Cerebrix</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">Entrenamiento cognitivo profesional en tu bolsillo.</p>
                 </div>
                 <button onClick={() => navigate('/games')} className="px-10 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs">Ver Todos los Juegos</button>
               </div>
@@ -246,7 +252,7 @@ const AppContent: React.FC = () => {
 };
 
 const NavButton: React.FC<{ to: string, emoji: string, label: string, active: boolean }> = ({ to, emoji, label, active }) => (
-  <Link to={to} className={`flex flex-col items-center flex-1 transition-colors ${active ? 'text-emerald-500' : 'text-slate-400'}`}>
+  <Link to={to} className={`flex flex-col items-center flex-1 transition-colors ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
     <span className="text-2xl">{emoji}</span>
     <span className="text-[9px] font-black uppercase tracking-tighter">{label}</span>
   </Link>

@@ -35,8 +35,8 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
         <div className="flex-1 w-full space-y-4">
           <h2 className="text-4xl font-black italic tracking-tighter uppercase text-slate-900 dark:text-white leading-none">ESTADO MENTAL</h2>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
-            Entrenamiento de <span className="text-emerald-500 font-black">{stats.daysPlayedCount} días</span>. 
+          <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
+            Entrenamiento de <span className="text-emerald-600 dark:text-emerald-400 font-black">{stats.daysPlayedCount} días</span>. 
           </p>
           <div className="flex flex-wrap gap-2">
             <div className="px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full text-orange-600 dark:text-orange-400 text-[10px] font-black">
@@ -51,12 +51,12 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
           {isMounted ? (
             <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                <PolarGrid stroke="#475569" strokeWidth={0.5} />
-                <PolarAngleAxis dataKey="category" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '900' }} />
+                <PolarGrid stroke="currentColor" className="text-slate-300 dark:text-slate-600" strokeWidth={0.5} />
+                <PolarAngleAxis dataKey="category" tick={{ fill: 'currentColor', fontSize: 9, fontWeight: '900', className: 'text-slate-500 dark:text-slate-400' }} />
                 <Radar name="Puntos" dataKey="score" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
               </RadarChart>
             </ResponsiveContainer>
-          ) : <div className="w-full h-full bg-slate-800/10 animate-pulse rounded-full" />}
+          ) : <div className="w-full h-full bg-slate-200 dark:bg-slate-800/10 animate-pulse rounded-full" />}
         </div>
       </div>
 
@@ -93,7 +93,7 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
                   />
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase italic text-center">Supera 3 niveles sin fallar para ganar el bonus</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase italic text-center">Supera 3 niveles sin fallar para ganar el bonus</p>
             </div>
           )}
         </div>

@@ -41,8 +41,8 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     for (let i = 0; i < seq.length; i++) {
       const padId = seq[i];
       setActivePad(padId);
-      // Vibración de pitch táctil: aumenta duración según el pad
-      triggerVibrate(20 + (padId * 8)); 
+      // Haptic Pitch: aumenta duración sutilmente según el pad para memoria auditivo-táctil
+      triggerVibrate(25 + (padId * 8)); 
       await new Promise(r => setTimeout(r, displayTime));
       setActivePad(null);
       await new Promise(r => setTimeout(r, gapTime));
@@ -67,7 +67,7 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     if (gameState !== 'recalling') return;
     
     setActivePad(id);
-    // Vibración corta de impacto firme
+    // Vibración de toque inmediata y firme
     triggerVibrate(30 + (id * 5)); 
     setTimeout(() => setActivePad(null), 150);
 
@@ -76,14 +76,14 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
 
     if (id !== sequence[newUserSeq.length - 1]) {
       setGameState('failed');
-      triggerVibrate([100, 50, 100]); // Vibración pesada para fallo
+      triggerVibrate([100, 50, 100]); // Vibración de error pesada
       setTimeout(() => onGameOver(score), 1000);
       return;
     }
 
     if (newUserSeq.length === sequence.length) {
       setGameState('success');
-      triggerVibrate([40, 30, 40]); // Doble vibración corta para éxito de nivel
+      triggerVibrate([40, 30, 40]); // Doble pulso de éxito
       setScore(s => s + (sequence.length * 200));
       setTimeout(() => { 
         setLevel(l => l + 1); 

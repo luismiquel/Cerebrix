@@ -93,7 +93,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
                     (dc === 1 && currentCell.walls.right);
 
     if (isBlocked) {
-        triggerVibrate([5, 10]); // Doble vibración corta para choque
+        triggerVibrate([5, 10]); // Vibración de colisión corta
         const dir = dr === -1 ? 'top' : dr === 1 ? 'bottom' : dc === -1 ? 'left' : 'right';
         setIsColliding(dir);
         setTimeout(() => setIsColliding(null), 100);
@@ -104,7 +104,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
     const nc = c + dc;
     if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
       setPlayerPos({ r: nr, c: nc });
-      triggerVibrate(15); // Vibración simple de movimiento
+      triggerVibrate(15); // Vibración de paso sutil
       if (nr === targetPos.r && nc === targetPos.c) {
         triggerVibrate([40, 30, 80]);
         setShowCelebration(true);

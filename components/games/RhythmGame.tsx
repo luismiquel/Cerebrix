@@ -58,7 +58,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
   }, [timeLeft, score, isDailyChallenge, TARGET_SCORE, onGameOver]);
 
   const handleAction = (lane: number) => {
-    // Feedback visual inmediato en el carril con brillo explosivo
+    // Feedback visual inmediato en el carril con resplandor glow
     setLaneFlash(prev => { const n = [...prev]; n[lane] = true; return n; });
     setTimeout(() => setLaneFlash(prev => { const n = [...prev]; n[lane] = false; return n; }), 150);
     
@@ -73,11 +73,11 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         const precision = Math.abs(prev[targetIdx].top - 85);
         if (precision < perfectThreshold) {
             setLastHitStatus('¡PERFECTO!');
-            triggerVibrate([30, 20, 30]); // Vibración rítmica doble para perfecto
+            triggerVibrate([30, 20, 30]); // Vibración rítmica doble
             setScore(s => s + Math.round(150 * scoreMult));
         } else {
             setLastHitStatus('BIEN');
-            triggerVibrate(25); // Vibración simple firme para acierto
+            triggerVibrate(25); // Vibración simple firme
             setScore(s => s + Math.round(75 * scoreMult));
         }
         setTimeout(() => setLastHitStatus(null), 400);
@@ -86,7 +86,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         updated[targetIdx].top = 200; 
         return updated;
       } else {
-        triggerVibrate(15); // Vibración sutil para toque fallido
+        triggerVibrate(15); // Vibración mínima para fallo
       }
       return prev;
     });

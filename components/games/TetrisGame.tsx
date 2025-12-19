@@ -75,7 +75,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     setGrid(filtered);
     
     if (cleared > 0) {
-        triggerVibrate([50, 40, 100]); // Vibración fuerte para líneas limpiadas
+        triggerVibrate([50, 40, 100]); // Vibración rítmica para limpieza
         setScore(s => s + (cleared * 100));
         setLinesCleared(l => {
             const total = l + cleared;
@@ -131,7 +131,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
       tempY++;
     }
     setPos(p => ({ ...p, y: tempY }));
-    triggerVibrate([40, 20, 60]); // Vibración rítmica para bajada rápida
+    triggerVibrate([40, 20, 60]); // Vibración rítmica para caída
     lockPiece();
   };
 

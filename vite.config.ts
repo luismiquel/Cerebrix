@@ -14,8 +14,5 @@ export default defineConfig({
         main: './index.html',
       },
     },
-  },
-  define: {
-    'process.env': process.env
   }
 });

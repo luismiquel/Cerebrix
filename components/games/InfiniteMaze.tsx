@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GameProps } from '../../types';
+import Celebration from '../Celebration';
 
 interface Cell {
   r: number;
@@ -25,6 +26,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
   const [targetPos, setTargetPos] = useState({ r: 0, c: 0 });
   const [level, setLevel] = useState(1);
   const [totalScore, setTotalScore] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const triggerVibrate = (ms: number | number[]) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(ms);
@@ -90,7 +92,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
                     (dc === 1 && currentCell.walls.right);
 
     if (isBlocked) {
-        triggerVibrate([20, 30]); // Vibración de colisión sorda
+        triggerVibrate([20, 30]);
         return;
     }
 
@@ -98,19 +100,23 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
     const nc = c + dc;
     if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
       setPlayerPos({ r: nr, c: nc });
-      triggerVibrate(15); // Feedback de movimiento fluido
+      triggerVibrate(15);
       if (nr === targetPos.r && nc === targetPos.c) {
         triggerVibrate([40, 30, 80]);
+        setShowCelebration(true);
         const points = size * (difficulty === 'master' ? 50 : 20);
         setTotalScore(s => s + points);
-        setLevel(l => l + 1);
         
-        if (difficulty === 'master') {
-            generateMaze(size);
-        } else {
-            if (size < 20) setSize(s => s + 1);
-            else generateMaze(size);
-        }
+        setTimeout(() => {
+          setLevel(l => l + 1);
+          setShowCelebration(false);
+          if (difficulty === 'master') {
+              generateMaze(size);
+          } else {
+              if (size < 20) setSize(s => s + 1);
+              else generateMaze(size);
+          }
+        }, 1500);
       }
     }
   };
@@ -136,7 +142,8 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
   );
 
   return (
-    <div className="flex flex-col items-center justify-between h-full p-4 select-none touch-none">
+    <div className="flex flex-col items-center justify-between h-full p-4 select-none touch-none relative">
+      <Celebration active={showCelebration} type="success" />
       <div className="flex justify-between w-full max-w-xs text-lg font-bold mb-4">
         <span className="text-teal-400 font-black uppercase text-xs tracking-widest">Nivel {level}</span>
         <span className="text-indigo-400 font-black italic">{totalScore.toLocaleString()} pts</span>

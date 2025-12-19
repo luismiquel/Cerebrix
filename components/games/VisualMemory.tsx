@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GameProps } from '../../types';
+import Celebration from '../Celebration';
 
 const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, fontSize, isDailyChallenge, currentRound = 1 }) => {
   const [level, setLevel] = useState(isDailyChallenge ? (currentRound - 1) * 3 + 1 : 1);
@@ -11,6 +12,7 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
   const [selected, setSelected] = useState<number[]>([]);
   const [status, setStatus] = useState<'memorize' | 'recall' | 'success' | 'fail'>('memorize');
   const [wrongTile, setWrongTile] = useState<number | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const triggerVibrate = (pattern: number | number[]) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -22,6 +24,7 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
     setStatus('memorize');
     setSelected([]);
     setWrongTile(null);
+    setShowCelebration(false);
 
     let newSize = 3;
     if (level > 4) newSize = 4;
@@ -31,7 +34,6 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
     setGridSize(newSize);
 
     const totalTiles = newSize * newSize;
-    // Maestro: 50% más cuadros para memorizar
     const multiplier = difficulty === 'master' ? 1.5 : 1;
     const targetCount = Math.floor((3 + Math.floor((level - 1) / 2.5)) * multiplier);
 
@@ -41,7 +43,6 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
     }
     setTargets(Array.from(newTargets));
 
-    // Maestro: memorización más rápida
     const baseMemorizeTime = difficulty === 'master' ? 800 : 1200;
     const perTargetTime = difficulty === 'master' ? 250 : 400;
     const memorizeTime = baseMemorizeTime + (targetCount * perTargetTime); 
@@ -68,9 +69,10 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
 
       if (newSelected.length === targets.length) {
         setStatus('success');
+        setShowCelebration(true);
         triggerVibrate(30);
         setScore(s => s + (targets.length * (difficulty === 'master' ? 100 : 50)));
-        setTimeout(() => setLevel(l => l + 1), 800);
+        setTimeout(() => setLevel(l => l + 1), 1200);
       }
     } else {
       triggerVibrate([40, 20, 40]);
@@ -87,7 +89,8 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 p-4 w-full select-none">
+    <div className="flex flex-col items-center justify-center gap-6 p-4 w-full select-none relative">
+      <Celebration active={showCelebration} type="burst" />
       <div className="flex justify-between w-full max-w-sm">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase text-slate-500 font-black tracking-widest leading-none mb-1">Puntos</span>
@@ -125,7 +128,7 @@ const VisualMemory: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficult
           } else if (status === 'recall') {
             if (selected.includes(idx)) tileClass = "bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)] scale-95 transition-none";
           } else if (status === 'success') {
-            if (targets.includes(idx)) tileClass = "bg-emerald-500 scale-95 transition-none";
+            if (targets.includes(idx)) tileClass = "bg-emerald-500 scale-95 shadow-[0_0_25px_white] transition-none";
           } else if (status === 'fail') {
              if (idx === wrongTile) tileClass = "bg-rose-500 animate-shake";
              else if (targets.includes(idx)) tileClass = "bg-white/40";

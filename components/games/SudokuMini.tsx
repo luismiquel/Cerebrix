@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameProps } from '../../types';
+import Celebration from '../Celebration';
 
 const SudokuMini: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, fontSize }) => {
   const [grid, setGrid] = useState<number[][]>([]);
@@ -8,23 +9,22 @@ const SudokuMini: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
   const [initial, setInitial] = useState<boolean[][]>([]);
   const [selected, setSelected] = useState<[number, number] | null>(null);
   const [score, setScore] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const generateBoard = () => {
-    // Generador simplificado de 4x4
     const base = [
       [1, 2, 3, 4],
       [3, 4, 1, 2],
       [2, 1, 4, 3],
       [4, 3, 2, 1]
     ];
-    // Mezclar filas y columnas
     const shuffled = [...base].sort(() => Math.random() - 0.5);
     setSolution(shuffled);
 
-    let emptyCount = 4; // Fácil
+    let emptyCount = 4;
     if (difficulty === 'medium') emptyCount = 6;
     if (difficulty === 'hard') emptyCount = 9;
-    if (difficulty === 'master') emptyCount = 12; // Muy pocas pistas
+    if (difficulty === 'master') emptyCount = 12;
     if (isSeniorMode) emptyCount = 3;
 
     const newGrid = shuffled.map(row => [...row]);
@@ -42,6 +42,7 @@ const SudokuMini: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
     }
     setGrid(newGrid);
     setInitial(newInitial);
+    setShowCelebration(false);
   };
 
   useEffect(() => {
@@ -57,17 +58,17 @@ const SudokuMini: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
     newGrid[r][c] = num;
     setGrid(newGrid);
 
-    // Verificar si completó
     const isFull = newGrid.every(row => row.every(cell => cell !== 0));
     if (isFull) {
       const isCorrect = newGrid.every((row, r) => row.every((cell, c) => cell === solution[r][c]));
       if (isCorrect) {
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([20, 10, 20]);
         setScore(s => s + (difficulty === 'master' ? 800 : 400));
+        setShowCelebration(true);
         setTimeout(() => {
           generateBoard();
           setSelected(null);
-        }, 800);
+        }, 1500);
       } else {
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
       }
@@ -75,10 +76,11 @@ const SudokuMini: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
   };
 
   return (
-    <div className="flex flex-col items-center gap-8 p-4 select-none touch-none">
+    <div className="flex flex-col items-center gap-8 p-4 select-none touch-none relative">
+      <Celebration active={showCelebration} type="success" />
       <div className="flex justify-between w-full max-w-xs items-center mb-2">
-         <span className="text-xs font-black uppercase tracking-widest text-slate-500">Puntos: {score}</span>
-         {difficulty === 'master' && <span className="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-full font-black animate-pulse">MODO MAESTRO</span>}
+         <span className="text-xs font-black uppercase tracking-widest text-slate-500 italic">Puntos: {score}</span>
+         {difficulty === 'master' && <span className="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-full font-black animate-pulse">MAESTRO</span>}
       </div>
 
       <div className="grid grid-cols-4 gap-2 bg-slate-900 p-3 rounded-2xl border-4 border-slate-700 shadow-2xl">
@@ -101,19 +103,12 @@ const SudokuMini: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
           <button
             key={n}
             onPointerDown={(e) => { e.preventDefault(); handleInput(n); }}
-            className="h-16 bg-indigo-600 rounded-2xl font-black text-white text-2xl active:translate-y-2 border-b-4 border-indigo-950 transition-all shadow-lg"
+            className="h-16 bg-indigo-600 rounded-2xl font-black text-white text-2xl active:translate-y-2 border-b-4 border-indigo-950 transition-all shadow-lg hover:bg-indigo-500"
           >
             {n}
           </button>
         ))}
       </div>
-      
-      <button 
-        onClick={() => onGameOver(score)}
-        className="text-[10px] text-slate-500 font-black uppercase tracking-widest hover:text-rose-500"
-      >
-        Finalizar Entrenamiento
-      </button>
     </div>
   );
 };

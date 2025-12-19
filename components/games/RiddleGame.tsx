@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameProps } from '../../types';
-import { getLocalRiddle } from '../../services/localDataService';
+// Fix: Import LOCAL_RIDDLES instead of non-existent getLocalRiddle.
+import { LOCAL_RIDDLES } from '../../services/localDataService';
 
 const RiddleGame: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   const [data, setData] = useState<any>(null);
@@ -9,7 +10,9 @@ const RiddleGame: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
-    setData(getLocalRiddle());
+    // Fix: Select a random riddle from the LOCAL_RIDDLES array.
+    const randomRiddle = LOCAL_RIDDLES[Math.floor(Math.random() * LOCAL_RIDDLES.length)];
+    setData(randomRiddle);
   }, []);
 
   const check = (e: React.FormEvent) => {

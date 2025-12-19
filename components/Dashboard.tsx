@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserStats } from '../types';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, RadarProps } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 interface Props {
   stats: UserStats;
@@ -9,6 +9,13 @@ interface Props {
 }
 
 const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const radarData = [
     { category: 'Lógica', score: stats.categoryScores['Lógica'] || 0 },
     { category: 'Memoria', score: stats.categoryScores['Memoria'] || 0 },
@@ -40,13 +47,15 @@ const Dashboard: React.FC<Props> = ({ stats, onStartChallenge }) => {
           </div>
         </div>
         <div className="w-full h-64 md:h-64 md:w-64 min-h-[240px] flex items-center justify-center">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-              <PolarGrid stroke="#475569" strokeWidth={0.5} />
-              <PolarAngleAxis dataKey="category" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '900' }} />
-              <Radar name="Puntos" dataKey="score" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
-            </RadarChart>
-          </ResponsiveContainer>
+          {isMounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
+              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
+                <PolarGrid stroke="#475569" strokeWidth={0.5} />
+                <PolarAngleAxis dataKey="category" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '900' }} />
+                <Radar name="Puntos" dataKey="score" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+              </RadarChart>
+            </ResponsiveContainer>
+          ) : <div className="w-full h-full bg-slate-800/10 animate-pulse rounded-full" />}
         </div>
       </div>
 

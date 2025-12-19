@@ -37,8 +37,8 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Pequeño delay para asegurar que el DOM ha calculado las dimensiones
-    const timer = setTimeout(() => setIsClient(true), 100);
+    // Retraso de 200ms para asegurar que el layout se ha estabilizado antes de renderizar gráficos
+    const timer = setTimeout(() => setIsClient(true), 200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -103,8 +103,6 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
     }
   };
 
-  const clearFilter = () => setFilterDate(null);
-
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="flex flex-col md:flex-row gap-6">
@@ -125,11 +123,11 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="glass rounded-[2rem] p-8 min-h-[350px] flex flex-col">
+        <div className="glass rounded-[2rem] p-8 min-h-[400px] flex flex-col">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Actividad Semanal</h2>
-          <div className="h-64 w-full">
+          <div className="flex-1 w-full" style={{ minHeight: '250px' }}>
             {isClient ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
                 <AreaChart data={dailyHistory} onClick={handleChartClick}>
                   <defs>
                     <linearGradient id="colorPuntos" x1="0" y1="0" x2="0" y2="1">
@@ -148,11 +146,11 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
           </div>
         </div>
 
-        <div className="glass rounded-[2rem] p-8 min-h-[350px] flex flex-col">
+        <div className="glass rounded-[2rem] p-8 min-h-[400px] flex flex-col">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Especialización</h2>
-          <div className="h-64 w-full">
+          <div className="flex-1 w-full" style={{ minHeight: '250px' }}>
             {isClient ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
                 <BarChart data={gamePerformance} layout="vertical">
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={80} />
@@ -170,7 +168,7 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
       <div className="glass rounded-[2rem] p-8" id="training-history">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Historial</h2>
-          {filterDate && <button onClick={clearFilter} className="text-xs font-bold text-rose-500 bg-rose-500/10 px-3 py-1 rounded-full uppercase">Limpiar Filtro ✕</button>}
+          {filterDate && <button onClick={() => setFilterDate(null)} className="text-xs font-bold text-rose-500 bg-rose-500/10 px-3 py-1 rounded-full uppercase">Limpiar Filtro ✕</button>}
         </div>
         <div className="space-y-6">
           {groupedHistory.length > 0 ? groupedHistory.map((dayGroup, groupIdx) => (

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { UserStats } from '../types';
 import { 
   XAxis, 
@@ -34,6 +34,13 @@ const getRelativeDateLabel = (dateStr: string) => {
 
 const ActivityDetail: React.FC<Props> = ({ stats }) => {
   const [filterDate, setFilterDate] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Recharts necesita estar seguro de que está en el cliente para el cálculo de dimensiones
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(new Date().getDate() - 7);
 
@@ -120,37 +127,41 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
         <div className="glass rounded-[2rem] p-8 min-h-[350px]">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Actividad Semanal</h2>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%" minHeight={240}>
-              <AreaChart data={dailyHistory} onClick={handleChartClick}>
-                <defs>
-                  <linearGradient id="colorPuntos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2dd4bf" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#2dd4bf" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#475569" vertical={false} opacity={0.2} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickFormatter={(val) => new Date(val).toLocaleDateString('es-ES', { weekday: 'short' })} />
-                <YAxis stroke="#94a3b8" fontSize={10} />
-                <Tooltip />
-                <Area type="monotone" dataKey="puntos" stroke="#2dd4bf" strokeWidth={3} fill="url(#colorPuntos)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {isClient ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={dailyHistory} onClick={handleChartClick}>
+                  <defs>
+                    <linearGradient id="colorPuntos" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2dd4bf" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#2dd4bf" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#475569" vertical={false} opacity={0.2} />
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickFormatter={(val) => new Date(val).toLocaleDateString('es-ES', { weekday: 'short' })} />
+                  <YAxis stroke="#94a3b8" fontSize={10} />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px' }} />
+                  <Area type="monotone" dataKey="puntos" stroke="#2dd4bf" strokeWidth={3} fill="url(#colorPuntos)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : <div className="w-full h-full bg-slate-800/20 animate-pulse rounded-2xl" />}
           </div>
         </div>
 
         <div className="glass rounded-[2rem] p-8 min-h-[350px]">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Especialización</h2>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%" minHeight={240}>
-              <BarChart data={gamePerformance} layout="vertical">
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={80} />
-                <Tooltip cursor={{fill: 'transparent'}} />
-                <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={15}>
-                  {gamePerformance.map((entry, index) => <Cell key={`cell-${index}`} fill="#3b82f6" />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {isClient ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={gamePerformance} layout="vertical">
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={80} />
+                  <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px' }} />
+                  <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={15}>
+                    {gamePerformance.map((entry, index) => <Cell key={`cell-${index}`} fill="#3b82f6" />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <div className="w-full h-full bg-slate-800/20 animate-pulse rounded-2xl" />}
           </div>
         </div>
       </div>
@@ -161,9 +172,9 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
           {filterDate && <button onClick={clearFilter} className="text-xs font-bold text-rose-500 bg-rose-500/10 px-3 py-1 rounded-full uppercase">Limpiar Filtro ✕</button>}
         </div>
         <div className="space-y-6">
-          {groupedHistory.map((dayGroup, groupIdx) => (
+          {groupedHistory.length > 0 ? groupedHistory.map((dayGroup, groupIdx) => (
             <div key={groupIdx} className="space-y-3">
-              <div className="flex items-center gap-4 sticky top-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur py-2 z-10">
+              <div className="flex items-center gap-4 sticky top-16 bg-[#0f172a]/80 backdrop-blur py-2 z-10">
                 <span className="text-sm font-black uppercase text-slate-500">{getRelativeDateLabel(dayGroup.date)}</span>
                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                 <span className="text-xs font-bold text-emerald-500">+{dayGroup.totalScore}</span>
@@ -183,7 +194,9 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
                 })}
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-10 text-slate-500 font-bold uppercase tracking-widest italic">No hay actividad registrada</div>
+          )}
         </div>
       </div>
     </div>

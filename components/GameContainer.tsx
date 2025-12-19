@@ -3,7 +3,7 @@ import React, { useState, Suspense, lazy, useMemo } from 'react';
 import { GameMetadata, DifficultyLevel } from '../types';
 import GamePoster from './GamePoster';
 
-// Motores de Juego Locales
+// Motores de Juego Locales - Carga perezosa estricta para optimizar chunks
 const Games = {
   MathBlitz: lazy(() => import('./games/MathBlitz')),
   Calculadora: lazy(() => import('./games/Calculadora')),
@@ -26,6 +26,7 @@ const Games = {
   NumberNinja: lazy(() => import('./games/NumberNinja')),
   StroopTest: lazy(() => import('./games/StroopTest')),
   SequenceRecall: lazy(() => import('./games/SequenceRecall')),
+  SchulteTable: lazy(() => import('./games/SchulteTable')),
 };
 
 interface Props {
@@ -73,8 +74,9 @@ const GameContainer: React.FC<Props> = ({
       case 'concentracion-total': case 'hidden-object': return Games.ConcentrationGame;
       case 'reflex-trainer': case 'reaction-time': return Games.ReactionTime;
       case 'enfoque-total': case 'bubble-pop': return Games.SpeedTraining;
-      case 'schulte-table': case 'number-ninja': return Games.NumberNinja;
-      case 'symbol-match': return Games.StroopTest; // El Stroop Test es ideal para control inhibitorio
+      case 'schulte-table': return Games.SchulteTable;
+      case 'number-ninja': return Games.NumberNinja;
+      case 'symbol-match': return Games.StroopTest; 
       
       // LENGUAJE
       case 'anagrams': case 'word-scramble': case 'letter-rain': return Games.WordScramble;
@@ -107,7 +109,10 @@ const GameContainer: React.FC<Props> = ({
         </div>
         <button onClick={onExit} className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-rose-500 text-white flex items-center justify-center transition-colors">✕</button>
       </div>
-      <Suspense fallback={<div className="flex items-center justify-center py-40 animate-pulse text-slate-500 font-black uppercase tracking-widest italic">Iniciando Motor...</div>}>
+      <Suspense fallback={<div className="flex flex-col items-center justify-center py-40 gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+          <div className="animate-pulse text-slate-500 font-black uppercase tracking-widest italic text-xs">Cargando motor de juego...</div>
+      </div>}>
         <GameComponent {...commonProps} />
       </Suspense>
     </div>

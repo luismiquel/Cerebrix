@@ -36,7 +36,6 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
-  // Recharts necesita estar seguro de que está en el cliente para el cálculo de dimensiones
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -124,11 +123,11 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="glass rounded-[2rem] p-8 min-h-[350px]">
+        <div className="glass rounded-[2rem] p-8 min-h-[350px] flex flex-col">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Actividad Semanal</h2>
-          <div className="h-64 w-full">
+          <div className="h-64 w-full flex-1">
             {isClient ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <AreaChart data={dailyHistory} onClick={handleChartClick}>
                   <defs>
                     <linearGradient id="colorPuntos" x1="0" y1="0" x2="0" y2="1">
@@ -147,11 +146,11 @@ const ActivityDetail: React.FC<Props> = ({ stats }) => {
           </div>
         </div>
 
-        <div className="glass rounded-[2rem] p-8 min-h-[350px]">
+        <div className="glass rounded-[2rem] p-8 min-h-[350px] flex flex-col">
           <h2 className="text-xl font-bold mb-8 text-slate-800 dark:text-white">Especialización</h2>
-          <div className="h-64 w-full">
+          <div className="h-64 w-full flex-1">
             {isClient ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={gamePerformance} layout="vertical">
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={80} />

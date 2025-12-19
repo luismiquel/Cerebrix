@@ -9,7 +9,7 @@ const Games = {
   Calculadora: lazy(() => import('./games/Calculadora')),
   MemoryMatch: lazy(() => import('./games/MemoryMatch')),
   VisualMemory: lazy(() => import('./games/VisualMemory')),
-  PatternMaster: lazy(() => import('./games/AISequence')), // Renombrado internamente a PatternMaster
+  PatternMaster: lazy(() => import('./games/AISequence')),
   RhythmGame: lazy(() => import('./games/RhythmGame')),
   TetrisGame: lazy(() => import('./games/TetrisGame')),
   InfiniteMaze: lazy(() => import('./games/InfiniteMaze')),
@@ -24,10 +24,8 @@ const Games = {
   SpeedTraining: lazy(() => import('./games/SpeedTraining')),
   ConcentrationGame: lazy(() => import('./games/ConcentrationGame')),
   NumberNinja: lazy(() => import('./games/NumberNinja')),
-  // Nuevos Motores Genéricos para completar los 40
-  ObservationEngine: lazy(() => import('./games/SpeedTraining')), // Reutilizado para juegos de atención
-  LogicEngine: lazy(() => import('./games/InfiniteMaze')), // Reutilizado para lógica espacial
-  LanguageEngine: lazy(() => import('./games/WordScramble')) // Reutilizado para variantes de lenguaje
+  StroopTest: lazy(() => import('./games/StroopTest')),
+  SequenceRecall: lazy(() => import('./games/SequenceRecall')),
 };
 
 interface Props {
@@ -52,17 +50,18 @@ const GameContainer: React.FC<Props> = ({
 
   const GameComponent = useMemo(() => {
     switch (game.id) {
-      // CÁLCULO (7 juegos)
+      // CÁLCULO
       case 'math-blitz': case 'speed-sum': case 'object-count': return Games.MathBlitz;
       case 'calculadora': case 'missing-op': case 'pair-sum': case 'balance-scale': return Games.Calculadora;
       
-      // MEMORIA (9 juegos)
+      // MEMORIA
       case 'memory-match': case 'find-pair': case 'card-memory': return Games.MemoryMatch;
       case 'visual-memory': case 'pattern-recall': case 'grid-path': case 'mental-map': return Games.VisualMemory;
       case 'memory-sequence': case 'sound-memory': return Games.PatternMaster;
       case 'ritmo-melodico': return Games.RhythmGame;
+      case 'sequence-recall': return Games.SequenceRecall;
       
-      // LÓGICA (11 juegos)
+      // LÓGICA
       case 'tetris': return Games.TetrisGame;
       case 'infinite-maze': case 'spatial-logic': case 'path-connect': case 'logic-puzzles': return Games.InfiniteMaze;
       case 'odd-one-out': case 'category-sort': case 'mirror-match': return Games.OddOneOut;
@@ -70,19 +69,19 @@ const GameContainer: React.FC<Props> = ({
       case 'sudoku-mini': return Games.SudokuMini;
       case 'ajedrez': return Games.ChessGame;
       
-      // ATENCIÓN (7 juegos)
+      // ATENCIÓN
       case 'concentracion-total': case 'hidden-object': return Games.ConcentrationGame;
       case 'reflex-trainer': case 'reaction-time': return Games.ReactionTime;
       case 'enfoque-total': case 'bubble-pop': return Games.SpeedTraining;
       case 'schulte-table': case 'number-ninja': return Games.NumberNinja;
-      case 'symbol-match': return Games.ObservationEngine;
+      case 'symbol-match': return Games.StroopTest; // El Stroop Test es ideal para control inhibitorio
       
-      // LENGUAJE (6 juegos)
+      // LENGUAJE
       case 'anagrams': case 'word-scramble': case 'letter-rain': return Games.WordScramble;
       case 'crucigrama': case 'word-search': return Games.CrosswordGame;
       case 'story-master': case 'synonyms': case 'rhyme-finder': return Games.StoryMaster;
       
-      default: return Games.LogicEngine;
+      default: return Games.InfiniteMaze;
     }
   }, [game.id]);
 
@@ -100,11 +99,11 @@ const GameContainer: React.FC<Props> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto glass rounded-[3rem] p-8 flex flex-col min-h-[650px] shadow-2xl border border-white/5">
+    <div className="max-w-4xl mx-auto glass rounded-[3rem] p-4 md:p-8 flex flex-col min-h-[650px] shadow-2xl border border-white/5">
       <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
         <div className="flex items-center gap-4">
           <div className={`w-12 h-12 ${game.color} rounded-xl flex items-center justify-center text-2xl text-white shadow-lg`}>{game.icon}</div>
-          <h2 className={`font-black uppercase italic tracking-tighter dark:text-white ${isSeniorMode ? 'text-3xl' : 'text-xl'}`}>{game.name}</h2>
+          <h2 className={`font-black uppercase italic tracking-tighter dark:text-white ${isSeniorMode ? 'text-2xl' : 'text-xl'}`}>{game.name}</h2>
         </div>
         <button onClick={onExit} className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-rose-500 text-white flex items-center justify-center transition-colors">✕</button>
       </div>

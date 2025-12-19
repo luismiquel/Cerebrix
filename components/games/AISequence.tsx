@@ -41,7 +41,7 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     for (let i = 0; i < seq.length; i++) {
       const padId = seq[i];
       setActivePad(padId);
-      triggerVibrate(15 + (padId * 5)); 
+      triggerVibrate(20 + (padId * 10)); 
       await new Promise(r => setTimeout(r, displayTime));
       setActivePad(null);
       await new Promise(r => setTimeout(r, gapTime));
@@ -66,22 +66,22 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     if (gameState !== 'recalling') return;
     
     setActivePad(id);
-    triggerVibrate(15 + (id * 5));
-    setTimeout(() => setActivePad(null), 150);
+    triggerVibrate(20 + (id * 10)); // Pitch-like vibration based on pad index
+    setTimeout(() => setActivePad(null), 200);
 
     const newUserSeq = [...userSequence, id];
     setUserSequence(newUserSeq);
 
     if (id !== sequence[newUserSeq.length - 1]) {
       setGameState('failed');
-      triggerVibrate([60, 40, 60]);
+      triggerVibrate([80, 50, 80]);
       setTimeout(() => onGameOver(score), 1000);
       return;
     }
 
     if (newUserSeq.length === sequence.length) {
       setGameState('success');
-      triggerVibrate([30, 20, 30]);
+      triggerVibrate([40, 20, 40]);
       setScore(s => s + (sequence.length * 200));
       setTimeout(() => { 
         setLevel(l => l + 1); 
@@ -95,7 +95,7 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   }, [generateNextLevel]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-10 p-4 select-none touch-none h-full">
+    <div className="flex flex-col items-center justify-center gap-10 p-4 select-none touch-none h-full pb-8">
       <div className="flex justify-between w-full max-w-sm px-4">
         <span className="text-purple-400 font-black text-2xl italic tracking-tighter">{score.toLocaleString()}</span>
         <span className="text-white font-black text-2xl italic tracking-tighter">LVL {level}</span>
@@ -114,16 +114,17 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
               key={pad.id}
               onPointerDown={(e) => { e.preventDefault(); handlePadClick(pad.id); }}
               disabled={gameState !== 'recalling'}
-              className={`absolute rounded-[2.5rem] transition-all duration-100 border-4 active:scale-90 ${padSize} ${isActive ? 'scale-110 z-20 opacity-100 border-white shadow-[0_0_60px_white]' : 'opacity-70 border-transparent shadow-2xl'}`}
+              className={`absolute rounded-[2.5rem] transition-all duration-150 border-4 active:scale-95 touch-none select-none ${padSize} ${isActive ? 'scale-115 z-20 opacity-100 border-white shadow-[0_0_60px_white]' : 'opacity-70 border-transparent shadow-2xl hover:opacity-100'}`}
               style={{
                 backgroundColor: pad.hex,
-                boxShadow: isActive ? `0 0 50px ${pad.hex}` : '0 10px 25px rgba(0,0,0,0.4)',
+                boxShadow: isActive ? `0 0 60px ${pad.hex}` : '0 12px 30px rgba(0,0,0,0.5)',
                 left: `calc(50% + ${Math.cos(angle * (Math.PI / 180)) * 34}% - 56px)`,
                 top: `calc(50% + ${Math.sin(angle * (Math.PI / 180)) * 34}% - 56px)`,
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
                 <div className="w-full h-full bg-white/10 rounded-[2.5rem] flex items-center justify-center">
-                   <div className="w-6 h-6 bg-white/30 rounded-full blur-[1px]" />
+                   <div className="w-8 h-8 bg-white/40 rounded-full blur-[1px] animate-pulse" />
                 </div>
             </button>
           );
@@ -135,7 +136,7 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
         </div>
       </div>
 
-      <p className="text-xs text-slate-500 font-black uppercase tracking-widest text-center max-w-xs mt-4 h-4 italic">
+      <p className="text-sm text-slate-500 font-black uppercase tracking-widest text-center max-w-xs mt-6 h-6 italic">
         {gameState === 'failed' ? 'ERROR' : gameState === 'success' ? '¡GENIAL!' : message}
       </p>
     </div>

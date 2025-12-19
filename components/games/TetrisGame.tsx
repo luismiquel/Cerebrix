@@ -75,7 +75,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     setGrid(filtered);
     
     if (cleared > 0) {
-        triggerVibrate([50, 40, 100]);
+        triggerVibrate([60, 40, 120, 20, 40]);
         setScore(s => s + (cleared * 100));
         setLinesCleared(l => {
             const total = l + cleared;
@@ -86,7 +86,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
             return total;
         });
     } else {
-        triggerVibrate(20);
+        triggerVibrate(15);
     }
     spawn();
   }, [currentPiece, pos, grid, isDailyChallenge, score, onGameOver, spawn]);
@@ -107,7 +107,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     if (!currentPiece) return;
     if (!checkCollision(currentPiece.shape, { x: pos.x + dx, y: pos.y }, grid)) {
       setPos(p => ({ ...p, x: p.x + dx }));
-      triggerVibrate(15);
+      triggerVibrate(8);
     } else {
       triggerVibrate(5);
     }
@@ -118,7 +118,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     const rotated = currentPiece.shape[0].map((_: any, i: number) => currentPiece.shape.map((row: any) => row[i]).reverse());
     if (!checkCollision(rotated, pos, grid)) {
       setCurrentPiece({ ...currentPiece, shape: rotated });
-      triggerVibrate(30);
+      triggerVibrate(25);
     } else {
       triggerVibrate([5, 10]);
     }
@@ -131,12 +131,12 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
       tempY++;
     }
     setPos(p => ({ ...p, y: tempY }));
-    triggerVibrate(80); // Vibración fuerte de impacto
+    triggerVibrate([50, 30, 80]);
     lockPiece();
   };
 
   return (
-    <div className="flex flex-col items-center justify-between h-full select-none touch-none">
+    <div className="flex flex-col items-center justify-between h-full select-none touch-none pb-2">
       <div className="flex justify-between w-full px-4 mb-2">
         <div className="flex flex-col">
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Puntos</span>
@@ -164,15 +164,15 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
         </div>
       </div>
 
-      <div className="w-full flex justify-between gap-4 px-2 mt-6 h-48 pb-4">
+      <div className="w-full flex justify-between gap-4 px-2 mt-6 h-48">
         <div className="grid grid-cols-2 gap-3 flex-1">
-            <button onPointerDown={(e) => { e.preventDefault(); move(-1); }} className="h-full bg-slate-800/80 rounded-[2rem] border-b-8 border-slate-950 flex items-center justify-center text-5xl active:translate-y-2 active:border-b-0 transition-all shadow-xl text-white">←</button>
-            <button onPointerDown={(e) => { e.preventDefault(); move(1); }} className="h-full bg-slate-800/80 rounded-[2rem] border-b-8 border-slate-950 flex items-center justify-center text-5xl active:translate-y-2 active:border-b-0 transition-all shadow-xl text-white">→</button>
-            <button onPointerDown={(e) => { e.preventDefault(); hardDrop(); }} className="col-span-2 h-20 bg-emerald-600 rounded-[2rem] border-b-8 border-emerald-900 flex items-center justify-center text-2xl font-black active:translate-y-2 active:border-b-0 transition-all shadow-lg text-white uppercase tracking-widest italic">HARD DROP</button>
+            <button onPointerDown={(e) => { e.preventDefault(); move(-1); }} className="h-full bg-slate-800/80 rounded-[2rem] border-b-8 border-slate-950 flex items-center justify-center text-5xl active:scale-95 active:translate-y-1 active:border-b-4 transition-all shadow-xl text-white touch-none select-none">←</button>
+            <button onPointerDown={(e) => { e.preventDefault(); move(1); }} className="h-full bg-slate-800/80 rounded-[2rem] border-b-8 border-slate-950 flex items-center justify-center text-5xl active:scale-95 active:translate-y-1 active:border-b-4 transition-all shadow-xl text-white touch-none select-none">→</button>
+            <button onPointerDown={(e) => { e.preventDefault(); hardDrop(); }} className="col-span-2 h-20 bg-emerald-600 rounded-[2rem] border-b-8 border-emerald-900 flex items-center justify-center text-2xl font-black active:scale-95 active:translate-y-1 active:border-b-4 transition-all shadow-lg text-white uppercase tracking-widest italic touch-none select-none">DROP</button>
         </div>
         
         <div className="w-1/3 flex flex-col">
-            <button onPointerDown={(e) => { e.preventDefault(); rotate(); }} className="h-full bg-indigo-600 rounded-[2.5rem] border-b-8 border-indigo-950 flex flex-col items-center justify-center active:scale-95 active:translate-y-2 active:border-b-0 transition-all shadow-xl shadow-indigo-500/20">
+            <button onPointerDown={(e) => { e.preventDefault(); rotate(); }} className="h-full bg-indigo-600 rounded-[2.5rem] border-b-8 border-indigo-950 flex flex-col items-center justify-center active:scale-90 active:translate-y-1 active:border-b-4 transition-all shadow-xl shadow-indigo-500/20 touch-none select-none">
                 <span className="text-6xl text-white">↻</span>
                 <span className="text-[10px] font-black uppercase text-white/50 tracking-widest mt-2">ROTAR</span>
             </button>

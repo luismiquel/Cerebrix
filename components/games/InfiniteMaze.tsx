@@ -92,7 +92,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
                     (dc === 1 && currentCell.walls.right);
 
     if (isBlocked) {
-        triggerVibrate([20, 30]);
+        triggerVibrate([10, 20]);
         return;
     }
 
@@ -100,9 +100,9 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
     const nc = c + dc;
     if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
       setPlayerPos({ r: nr, c: nc });
-      triggerVibrate(15);
+      triggerVibrate(10);
       if (nr === targetPos.r && nc === targetPos.c) {
-        triggerVibrate([40, 30, 80]);
+        triggerVibrate([40, 30, 80, 20, 120]);
         setShowCelebration(true);
         const points = size * (difficulty === 'master' ? 50 : 20);
         setTotalScore(s => s + points);
@@ -135,7 +135,8 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
   const DPadButton = ({ onClick, children, className }: any) => (
     <button 
       onPointerDown={(e) => { e.preventDefault(); onClick(); }}
-      className={`h-20 rounded-[2rem] bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:translate-y-2 active:border-b-0 active:bg-indigo-600 transition-all shadow-xl shadow-black/40 ${className}`}
+      className={`h-20 rounded-[2rem] bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:scale-95 active:translate-y-1 active:border-b-4 active:bg-indigo-600 transition-all shadow-xl shadow-black/40 touch-none select-none ${className}`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {children}
     </button>
@@ -179,7 +180,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 w-full max-w-[340px] mt-6 px-2">
+      <div className="grid grid-cols-3 gap-4 w-full max-w-[340px] mt-6 px-2">
         <div />
         <DPadButton onClick={() => movePlayer(-1, 0)}>↑</DPadButton>
         <div />

@@ -26,7 +26,6 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
   const gameLoop = useCallback((time: number) => {
     if (timeLeft <= 0) return;
     
-    // Frecuencia de aparición (ms)
     const baseRate = isDailyChallenge ? 1000 - (currentRound * 150) : 800;
     let rate = difficulty === 'hard' ? 400 : baseRate;
     if (difficulty === 'master') rate = 280; 
@@ -37,7 +36,6 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
     }
 
     setNotes(prev => {
-      // Velocidad de caída
       const speed = isDailyChallenge ? 0.8 + (currentRound * 0.2) : 1.0;
       let finalSpeed = difficulty === 'hard' ? 1.6 : speed;
       if (difficulty === 'master') finalSpeed = 2.4; 
@@ -60,15 +58,14 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
   }, [timeLeft, score, isDailyChallenge, TARGET_SCORE, onGameOver]);
 
   const handleAction = (lane: number) => {
-    // Feedback visual instantáneo
+    // Feedback visual inmediato en el carril
     setLaneFlash(prev => { const n = [...prev]; n[lane] = true; return n; });
     setTimeout(() => setLaneFlash(prev => { const n = [...prev]; n[lane] = false; return n; }), 150);
     
     setNotes(prev => {
-      // Ventanas de impacto
-      const hitThreshold = difficulty === 'master' ? 10 : 18;
-      const perfectThreshold = difficulty === 'master' ? 4 : 7;
-      const scoreMult = difficulty === 'master' ? 2.5 : 1;
+      const hitThreshold = difficulty === 'master' ? 12 : 20;
+      const perfectThreshold = difficulty === 'master' ? 6 : 9;
+      const scoreMult = difficulty === 'master' ? 2 : 1;
 
       const targetIdx = prev.findIndex(n => n.lane === lane && !n.hit && Math.abs(n.top - 85) < hitThreshold);
       
@@ -76,12 +73,12 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         const precision = Math.abs(prev[targetIdx].top - 85);
         if (precision < perfectThreshold) {
             setLastHitStatus('¡PERFECTO!');
-            triggerVibrate([30, 20, 40]);
-            setScore(s => s + Math.round(100 * scoreMult));
+            triggerVibrate([35, 15, 35]); // Vibración rítmica doble para perfecto
+            setScore(s => s + Math.round(150 * scoreMult));
         } else {
             setLastHitStatus('BIEN');
-            triggerVibrate(20);
-            setScore(s => s + Math.round(50 * scoreMult));
+            triggerVibrate(25); // Vibración simple para acierto
+            setScore(s => s + Math.round(75 * scoreMult));
         }
         setTimeout(() => setLastHitStatus(null), 400);
         const updated = [...prev];
@@ -89,12 +86,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         updated[targetIdx].top = 200; 
         return updated;
       } else {
-        if (difficulty === 'master') {
-            triggerVibrate([40, 30]);
-            setScore(s => Math.max(0, s - 25));
-        } else {
-            triggerVibrate(15);
-        }
+        triggerVibrate(10); // Vibración mínima para toque fallido
       }
       return prev;
     });
@@ -105,17 +97,21 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
       <div className="flex justify-between w-full px-6 mb-4 z-20">
         <div className="flex flex-col">
             <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none">Puntos</span>
-            <span className={`text-4xl font-black ${difficulty === 'master' ? 'text-indigo-400' : 'text-pink-500'}`}>{score}</span>
+            <span className={`text-4xl font-black ${difficulty === 'master' ? 'text-indigo-400' : 'text-pink-500'} leading-tight`}>{score}</span>
         </div>
         <div className="flex flex-col items-end">
             <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none">Tiempo</span>
-            <span className={`text-3xl font-mono ${timeLeft < 5 ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`}>{timeLeft}s</span>
+            <span className={`text-3xl font-mono ${timeLeft < 5 ? 'text-rose-500 animate-pulse' : 'text-slate-400'} leading-tight`}>{timeLeft}s</span>
         </div>
       </div>
 
-      <div className={`relative flex-1 w-full bg-slate-950/60 rounded-[3rem] border-4 overflow-hidden shadow-inner transition-colors duration-500 ${difficulty === 'master' ? 'border-indigo-500/30 shadow-indigo-500/10' : 'border-slate-800'}`}>
+      <div className={`relative flex-1 w-full bg-slate-950/60 rounded-[3rem] border-4 border-slate-800 overflow-hidden shadow-inner transition-colors duration-500`}>
         {LANES.map(l => (
-            <div key={l} className={`absolute h-full w-[25%] transition-opacity duration-150 ${laneFlash[l] ? 'opacity-40' : 'opacity-0'}`} style={{ left: `${l*25}%`, background: `linear-gradient(to top, ${LANE_COLORS[l]}, transparent)` }} />
+            <div 
+              key={l} 
+              className={`absolute h-full w-[25%] transition-opacity duration-150 ${laneFlash[l] ? 'opacity-40' : 'opacity-0'}`} 
+              style={{ left: `${l*25}%`, background: `linear-gradient(to top, ${LANE_COLORS[l]}, transparent)` }} 
+            />
         ))}
         
         <div className="absolute w-full h-1 bg-white/20 top-[85%] z-10" />
@@ -123,7 +119,7 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
 
         {lastHitStatus && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-                <span className={`text-6xl font-black italic uppercase animate-ping ${lastHitStatus === '¡PERFECTO!' ? 'text-yellow-400' : 'text-white'}`}>
+                <span className={`text-5xl md:text-7xl font-black italic uppercase animate-ping ${lastHitStatus === '¡PERFECTO!' ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.8)]' : 'text-white'}`}>
                     {lastHitStatus}
                 </span>
             </div>
@@ -132,29 +128,27 @@ const RhythmGame: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty,
         {notes.map(n => !n.hit && (
           <div 
             key={n.id} 
-            className={`absolute w-[22%] h-[6%] rounded-full shadow-2xl transition-transform ${difficulty === 'master' ? 'opacity-90' : ''}`} 
+            className={`absolute w-[22%] h-[6%] rounded-full shadow-2xl transition-transform`} 
             style={{ 
                 top: `${n.top}%`, 
                 left: `${(n.lane*25)+1.5}%`, 
                 backgroundColor: LANE_COLORS[n.lane], 
-                boxShadow: `0 0 ${difficulty === 'master' ? '40' : '25'}px ${LANE_COLORS[n.lane]}`,
+                boxShadow: `0 0 25px ${LANE_COLORS[n.lane]}`,
                 transform: `scale(${n.top > 82 && n.top < 88 ? 1.4 : 1})`
             }} 
           />
         ))}
       </div>
 
-      <div className="grid grid-cols-4 gap-4 w-full h-36 mt-6 px-2">
+      <div className="grid grid-cols-4 gap-4 md:gap-6 w-full h-36 mt-8 px-2 pb-4">
         {LANES.map(l => (
           <button 
             key={l} 
             onPointerDown={(e) => { e.preventDefault(); handleAction(l); }} 
-            className={`h-full rounded-[2.5rem] bg-slate-800 border-b-[10px] active:scale-90 active:translate-y-2 active:border-b-4 active:bg-slate-700 transition-all flex items-center justify-center shadow-2xl border-slate-950 touch-none select-none`}
+            className={`h-full rounded-[2rem] bg-slate-800 border-b-[6px] border-slate-950 active:scale-90 active:translate-y-1 active:bg-slate-700 active:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all flex items-center justify-center shadow-lg touch-none`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className={`w-14 h-14 rounded-full border-4 border-white/30 flex items-center justify-center ${difficulty === 'master' ? 'scale-110' : ''}`} style={{ backgroundColor: LANE_COLORS[l] }}>
-                <div className="w-4 h-4 rounded-full bg-white/40 animate-pulse" />
-            </div>
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border-4 md:border-6 border-white/20" style={{ backgroundColor: LANE_COLORS[l], boxShadow: `0 0 25px ${LANE_COLORS[l]}55` }} />
           </button>
         ))}
       </div>

@@ -23,7 +23,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
   const [currentPiece, setCurrentPiece] = useState<any>(null);
   const [pos, setPos] = useState({ x: 3, y: 0 });
 
-  const dropInterval = isSeniorMode ? 1200 : (difficulty === 'master' ? 200 : (difficulty === 'hard' ? 400 : 800));
+  const dropInterval = isSeniorMode ? 1200 : (difficulty === 'master' ? 250 : (difficulty === 'hard' ? 450 : 800));
   const TARGET_LINES = 5;
 
   const triggerVibrate = (pattern: number | number[]) => { 
@@ -75,7 +75,7 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
     setGrid(filtered);
     
     if (cleared > 0) {
-        triggerVibrate([60, 40, 120, 20, 40]);
+        triggerVibrate([50, 40, 100]);
         setScore(s => s + (cleared * 100));
         setLinesCleared(l => {
             const total = l + cleared;
@@ -104,48 +104,58 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
   }, [currentPiece, pos, grid, gameOver, checkCollision, dropInterval, lockPiece]);
 
   const move = (dx: number) => {
-    if (!currentPiece) return;
+    if (!currentPiece || gameOver) return;
     if (!checkCollision(currentPiece.shape, { x: pos.x + dx, y: pos.y }, grid)) {
       setPos(p => ({ ...p, x: p.x + dx }));
-      triggerVibrate(8);
-    } else {
-      triggerVibrate(5);
-    }
-  };
-
-  const rotate = () => {
-    if (!currentPiece) return;
-    const rotated = currentPiece.shape[0].map((_: any, i: number) => currentPiece.shape.map((row: any) => row[i]).reverse());
-    if (!checkCollision(rotated, pos, grid)) {
-      setCurrentPiece({ ...currentPiece, shape: rotated });
-      triggerVibrate(25);
+      triggerVibrate(10);
     } else {
       triggerVibrate([5, 10]);
     }
   };
 
+  const rotate = () => {
+    if (!currentPiece || gameOver) return;
+    const rotated = currentPiece.shape[0].map((_: any, i: number) => currentPiece.shape.map((row: any) => row[i]).reverse());
+    if (!checkCollision(rotated, pos, grid)) {
+      setCurrentPiece({ ...currentPiece, shape: rotated });
+      triggerVibrate(25);
+    } else {
+      triggerVibrate([5, 15]);
+    }
+  };
+
   const hardDrop = () => {
-    if (!currentPiece) return;
+    if (!currentPiece || gameOver) return;
     let tempY = pos.y;
     while (!checkCollision(currentPiece.shape, { x: pos.x, y: tempY + 1 }, grid)) {
       tempY++;
     }
     setPos(p => ({ ...p, y: tempY }));
-    triggerVibrate([50, 30, 80]);
+    triggerVibrate([40, 20, 60]);
     lockPiece();
   };
 
+  const ControlBtn = ({ onAction, children, className }: any) => (
+    <button 
+      onPointerDown={(e) => { e.preventDefault(); onAction(); }}
+      className={`rounded-2xl border-b-[6px] transition-all flex items-center justify-center select-none touch-none ${className}`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="flex flex-col items-center justify-between h-full select-none touch-none pb-2">
+    <div className="flex flex-col items-center justify-between h-full select-none touch-none pb-4">
       <div className="flex justify-between w-full px-4 mb-2">
         <div className="flex flex-col">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Puntos</span>
-            <div className="text-2xl font-black text-blue-400 italic">{score.toLocaleString()}</div>
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none">Puntos</span>
+            <div className="text-2xl font-black text-blue-400 italic leading-tight">{score.toLocaleString()}</div>
         </div>
       </div>
       
       <div className="bg-slate-950 p-1 border-4 border-slate-800 rounded-2xl shadow-2xl relative overflow-hidden">
-        <div className="grid grid-cols-10 grid-rows-20 w-[180px] h-[360px] gap-px">
+        <div className="grid grid-cols-10 grid-rows-20 w-[180px] md:w-[220px] h-[360px] md:h-[440px] gap-px">
           {grid.map((row, y) => row.map((cell, x) => {
             let color = 'bg-slate-900/40';
             if (cell !== 0) {
@@ -164,19 +174,28 @@ const TetrisGame: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMode,
         </div>
       </div>
 
-      <div className="w-full flex justify-between gap-4 px-2 mt-6 h-48">
-        <div className="grid grid-cols-2 gap-3 flex-1">
-            <button onPointerDown={(e) => { e.preventDefault(); move(-1); }} className="h-full bg-slate-800/80 rounded-[2rem] border-b-8 border-slate-950 flex items-center justify-center text-5xl active:scale-95 active:translate-y-1 active:border-b-4 transition-all shadow-xl text-white touch-none select-none">←</button>
-            <button onPointerDown={(e) => { e.preventDefault(); move(1); }} className="h-full bg-slate-800/80 rounded-[2rem] border-b-8 border-slate-950 flex items-center justify-center text-5xl active:scale-95 active:translate-y-1 active:border-b-4 transition-all shadow-xl text-white touch-none select-none">→</button>
-            <button onPointerDown={(e) => { e.preventDefault(); hardDrop(); }} className="col-span-2 h-20 bg-emerald-600 rounded-[2rem] border-b-8 border-emerald-900 flex items-center justify-center text-2xl font-black active:scale-95 active:translate-y-1 active:border-b-4 transition-all shadow-lg text-white uppercase tracking-widest italic touch-none select-none">DROP</button>
-        </div>
-        
-        <div className="w-1/3 flex flex-col">
-            <button onPointerDown={(e) => { e.preventDefault(); rotate(); }} className="h-full bg-indigo-600 rounded-[2.5rem] border-b-8 border-indigo-950 flex flex-col items-center justify-center active:scale-90 active:translate-y-1 active:border-b-4 transition-all shadow-xl shadow-indigo-500/20 touch-none select-none">
-                <span className="text-6xl text-white">↻</span>
-                <span className="text-[10px] font-black uppercase text-white/50 tracking-widest mt-2">ROTAR</span>
-            </button>
-        </div>
+      <div className="w-full grid grid-cols-4 gap-3 px-2 mt-6 h-36">
+        <ControlBtn 
+          onAction={() => move(-1)}
+          className="bg-slate-800 border-slate-950 text-white text-4xl active:scale-90 active:bg-indigo-600 shadow-lg"
+        >←</ControlBtn>
+        <ControlBtn 
+          onAction={() => rotate()}
+          className="col-span-2 bg-indigo-600 border-indigo-950 text-white active:scale-95 active:shadow-[0_0_20px_rgba(99,102,241,0.6)] shadow-xl"
+        >
+          <div className="flex flex-col items-center">
+            <span className="text-4xl leading-none">↻</span>
+            <span className="text-[10px] font-black uppercase tracking-widest mt-1">ROTAR</span>
+          </div>
+        </ControlBtn>
+        <ControlBtn 
+          onAction={() => move(1)}
+          className="bg-slate-800 border-slate-950 text-white text-4xl active:scale-90 active:bg-indigo-600 shadow-lg"
+        >→</ControlBtn>
+        <ControlBtn 
+          onAction={() => hardDrop()}
+          className="col-span-4 h-16 bg-emerald-600 border-emerald-900 text-white text-lg font-black uppercase tracking-widest italic active:scale-95 active:shadow-[0_0_20px_rgba(16,185,129,0.6)] shadow-xl"
+        >BAJADA RÁPIDA (DROP)</ControlBtn>
       </div>
     </div>
   );

@@ -34,14 +34,15 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     setMessage('OBSERVA EL PATRÓN');
     let displayTime = 600;
     let gapTime = 400;
-    if (difficulty === 'master') { displayTime = 250; gapTime = 100; }
-    else if (difficulty === 'hard') { displayTime = 400; gapTime = 200; }
+    if (difficulty === 'master') { displayTime = 300; gapTime = 150; }
+    else if (difficulty === 'hard') { displayTime = 450; gapTime = 250; }
     
     await new Promise(r => setTimeout(r, 800));
     for (let i = 0; i < seq.length; i++) {
       const padId = seq[i];
       setActivePad(padId);
-      triggerVibrate(20 + (padId * 10)); 
+      // Vibración de pitch táctil (más larga para pads posteriores)
+      triggerVibrate(20 + (padId * 5)); 
       await new Promise(r => setTimeout(r, displayTime));
       setActivePad(null);
       await new Promise(r => setTimeout(r, gapTime));
@@ -66,22 +67,23 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
     if (gameState !== 'recalling') return;
     
     setActivePad(id);
-    triggerVibrate(20 + (id * 10)); // Pitch-like vibration based on pad index
-    setTimeout(() => setActivePad(null), 200);
+    // Vibración corta instantánea al tocar
+    triggerVibrate(25 + (id * 4)); 
+    setTimeout(() => setActivePad(null), 150);
 
     const newUserSeq = [...userSequence, id];
     setUserSequence(newUserSeq);
 
     if (id !== sequence[newUserSeq.length - 1]) {
       setGameState('failed');
-      triggerVibrate([80, 50, 80]);
+      triggerVibrate([100, 50, 100]); // Vibración pesada para error
       setTimeout(() => onGameOver(score), 1000);
       return;
     }
 
     if (newUserSeq.length === sequence.length) {
       setGameState('success');
-      triggerVibrate([40, 20, 40]);
+      triggerVibrate([45, 25, 45]); // Vibración rítmica para éxito
       setScore(s => s + (sequence.length * 200));
       setTimeout(() => { 
         setLevel(l => l + 1); 
@@ -95,49 +97,49 @@ const PatternMaster: React.FC<GameProps> = ({ onGameOver, difficulty }) => {
   }, [generateNextLevel]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-10 p-4 select-none touch-none h-full pb-8">
+    <div className="flex flex-col items-center justify-center gap-8 md:gap-12 p-4 select-none touch-none h-full pb-10">
       <div className="flex justify-between w-full max-w-sm px-4">
-        <span className="text-purple-400 font-black text-2xl italic tracking-tighter">{score.toLocaleString()}</span>
-        <span className="text-white font-black text-2xl italic tracking-tighter">LVL {level}</span>
+        <span className="text-purple-400 font-black text-3xl italic tracking-tighter drop-shadow-[0_0_10px_rgba(168,85,247,0.4)] leading-tight">{score.toLocaleString()}</span>
+        <span className="text-white font-black text-3xl italic tracking-tighter leading-tight">LVL {level}</span>
       </div>
 
-      <div className="relative w-full aspect-square max-w-[340px] flex items-center justify-center">
-        <div className="absolute inset-0 bg-white/5 rounded-full border-2 border-white/5 animate-pulse" />
+      <div className="relative w-full aspect-square max-w-[340px] md:max-w-[400px] flex items-center justify-center">
+        <div className="absolute inset-0 bg-white/5 rounded-full border-4 border-white/5 animate-pulse" />
         
         {activePads.map((pad, idx) => {
           const angle = (idx * (360 / padCount)) - 90;
           const isActive = activePad === pad.id;
-          const padSize = padCount > 6 ? 'w-24 h-24' : 'w-28 h-28';
+          const padSize = padCount > 6 ? 'w-24 h-24 md:w-28 md:h-28' : 'w-28 h-28 md:w-32 md:h-32';
           
           return (
             <button
               key={pad.id}
               onPointerDown={(e) => { e.preventDefault(); handlePadClick(pad.id); }}
               disabled={gameState !== 'recalling'}
-              className={`absolute rounded-[2.5rem] transition-all duration-150 border-4 active:scale-95 touch-none select-none ${padSize} ${isActive ? 'scale-115 z-20 opacity-100 border-white shadow-[0_0_60px_white]' : 'opacity-70 border-transparent shadow-2xl hover:opacity-100'}`}
+              className={`absolute rounded-[2.5rem] transition-all duration-150 border-4 md:border-6 active:scale-90 active:shadow-[0_0_35px_white] touch-none select-none ${padSize} ${isActive ? 'scale-110 z-20 opacity-100 border-white shadow-[0_0_55px_white]' : 'opacity-80 border-transparent shadow-2xl hover:opacity-100'}`}
               style={{
                 backgroundColor: pad.hex,
-                boxShadow: isActive ? `0 0 60px ${pad.hex}` : '0 12px 30px rgba(0,0,0,0.5)',
-                left: `calc(50% + ${Math.cos(angle * (Math.PI / 180)) * 34}% - 56px)`,
-                top: `calc(50% + ${Math.sin(angle * (Math.PI / 180)) * 34}% - 56px)`,
+                boxShadow: isActive ? `0 0 70px ${pad.hex}` : '0 15px 40px rgba(0,0,0,0.6)',
+                left: `calc(50% + ${Math.cos(angle * (Math.PI / 180)) * 36}% - ${padCount > 6 ? '48' : '56'}px)`,
+                top: `calc(50% + ${Math.sin(angle * (Math.PI / 180)) * 36}% - ${padCount > 6 ? '48' : '56'}px)`,
                 WebkitTapHighlightColor: 'transparent'
               }}
             >
                 <div className="w-full h-full bg-white/10 rounded-[2.5rem] flex items-center justify-center">
-                   <div className="w-8 h-8 bg-white/40 rounded-full blur-[1px] animate-pulse" />
+                   <div className="w-8 h-8 md:w-12 md:h-12 bg-white/25 rounded-full blur-[1px] animate-pulse" />
                 </div>
             </button>
           );
         })}
-        <div className="w-24 h-24 bg-slate-900 rounded-full border-4 border-slate-800 flex flex-col items-center justify-center shadow-inner z-10">
-           <span className={`text-[10px] font-black uppercase tracking-tighter text-center transition-colors ${gameState === 'recalling' ? 'text-violet-400' : 'text-slate-600'}`}>
+        <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-900 rounded-full border-6 border-slate-800 flex flex-col items-center justify-center shadow-inner z-10">
+           <span className={`text-[10px] font-black uppercase tracking-tighter text-center transition-colors leading-none ${gameState === 'recalling' ? 'text-violet-400' : 'text-slate-600'}`}>
                {gameState === 'recalling' ? 'TU TURNO' : 'MIRA'}
            </span>
         </div>
       </div>
 
-      <p className="text-sm text-slate-500 font-black uppercase tracking-widest text-center max-w-xs mt-6 h-6 italic">
-        {gameState === 'failed' ? 'ERROR' : gameState === 'success' ? '¡GENIAL!' : message}
+      <p className="text-base text-slate-500 font-black uppercase tracking-widest text-center max-w-xs mt-6 h-8 italic">
+        {gameState === 'failed' ? '¡ERROR!' : gameState === 'success' ? '¡GENIAL!' : message}
       </p>
     </div>
   );

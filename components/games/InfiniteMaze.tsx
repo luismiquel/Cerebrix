@@ -92,7 +92,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
                     (dc === 1 && currentCell.walls.right);
 
     if (isBlocked) {
-        triggerVibrate([10, 20]);
+        triggerVibrate([5, 15]); // Vibración de colisión corta
         return;
     }
 
@@ -100,9 +100,9 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
     const nc = c + dc;
     if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
       setPlayerPos({ r: nr, c: nc });
-      triggerVibrate(10);
+      triggerVibrate(10); // Vibración de paso sutil
       if (nr === targetPos.r && nc === targetPos.c) {
-        triggerVibrate([40, 30, 80, 20, 120]);
+        triggerVibrate([40, 30, 80]);
         setShowCelebration(true);
         const points = size * (difficulty === 'master' ? 50 : 20);
         setTotalScore(s => s + points);
@@ -116,7 +116,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
               if (size < 20) setSize(s => s + 1);
               else generateMaze(size);
           }
-        }, 1500);
+        }, 1200);
       }
     }
   };
@@ -134,8 +134,11 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
 
   const DPadButton = ({ onClick, children, className }: any) => (
     <button 
-      onPointerDown={(e) => { e.preventDefault(); onClick(); }}
-      className={`h-20 rounded-[2rem] bg-slate-800 border-b-8 border-slate-950 flex items-center justify-center text-4xl text-white active:scale-95 active:translate-y-1 active:border-b-4 active:bg-indigo-600 transition-all shadow-xl shadow-black/40 touch-none select-none ${className}`}
+      onPointerDown={(e) => { 
+        e.preventDefault(); 
+        onClick(); 
+      }}
+      className={`h-20 w-20 md:h-24 md:w-24 rounded-3xl bg-slate-800 border-b-[6px] border-slate-950 flex items-center justify-center text-4xl text-white active:scale-90 active:translate-y-1 active:bg-indigo-600 active:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all shadow-xl touch-none select-none ${className}`}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {children}
@@ -143,7 +146,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
   );
 
   return (
-    <div className="flex flex-col items-center justify-between h-full p-4 select-none touch-none relative">
+    <div className="flex flex-col items-center justify-between h-full p-2 md:p-4 select-none touch-none relative">
       <Celebration active={showCelebration} type="success" />
       <div className="flex justify-between w-full max-w-xs text-lg font-bold mb-4">
         <span className="text-teal-400 font-black uppercase text-xs tracking-widest">Nivel {level}</span>
@@ -151,7 +154,7 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
       </div>
 
       <div 
-        className="grid gap-0 bg-slate-950 border-4 border-slate-800 p-1 rounded-[2.5rem] shadow-2xl relative overflow-hidden"
+        className="grid gap-0 bg-slate-950 border-4 border-slate-800 p-1 rounded-3xl shadow-2xl relative overflow-hidden"
         style={{ 
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           width: 'min(85vw, 360px)',
@@ -171,16 +174,16 @@ const InfiniteMaze: React.FC<GameProps> = ({ onGameOver, difficulty, isSeniorMod
             }}
           >
             {playerPos.r === cell.r && playerPos.c === cell.c && (
-              <div className="w-full h-full rounded-sm bg-indigo-500 shadow-[0_0_15px_#6366f1] scale-90 z-20 animate-pulse" />
+              <div className="w-[80%] h-[80%] rounded-md bg-indigo-500 shadow-[0_0_15px_#6366f1] z-20 animate-pulse" />
             )}
             {targetPos.r === cell.r && targetPos.c === cell.c && (
-              <div className="w-full h-full rounded-sm bg-emerald-500 shadow-[0_0_15px_#10b981] opacity-50 z-10" />
+              <div className="w-[80%] h-[80%] rounded-md bg-emerald-500 shadow-[0_0_15px_#10b981] opacity-50 z-10" />
             )}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4 w-full max-w-[340px] mt-6 px-2">
+      <div className="grid grid-cols-3 gap-3 md:gap-5 w-full max-w-[280px] md:max-w-[360px] mt-6 px-2 pb-6">
         <div />
         <DPadButton onClick={() => movePlayer(-1, 0)}>↑</DPadButton>
         <div />

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GameProps } from '../../types';
+import Celebration from '../Celebration';
 
 const Calculadora: React.FC<GameProps> = ({ onGameOver, fontSize, difficulty, isSeniorMode, isDailyChallenge, currentRound = 1 }) => {
   const [score, setScore] = useState(0);
@@ -8,12 +9,12 @@ const Calculadora: React.FC<GameProps> = ({ onGameOver, fontSize, difficulty, is
   const [problem, setProblem] = useState({ expression: '', answer: 0, isAlgebra: false });
   const [input, setInput] = useState('');
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'wrong'>('none');
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const TARGET = 10;
 
-  // Fix: Added support for vibration patterns (number[]) in the helper function signature
   const vibrate = (ms: number | number[]) => {
-    if (navigator.vibrate) navigator.vibrate(ms);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(ms);
   };
 
   const generateProblem = useCallback((currentScore: number) => {
@@ -85,13 +86,15 @@ const Calculadora: React.FC<GameProps> = ({ onGameOver, fontSize, difficulty, is
     if (feedback !== 'none' || !input) return;
     const val = parseInt(input);
     if (val === problem.answer) {
-        vibrate(50);
+        vibrate(30);
         setFeedback('correct');
         const newScore = score + (problem.isAlgebra ? 25 : 10);
         setScore(newScore);
         const correctAnswers = Math.floor(newScore / 10);
         if (isDailyChallenge && correctAnswers >= TARGET) {
-          setTimeout(() => onGameOver(newScore + 500, true), 800);
+          setShowCelebration(true);
+          vibrate([40, 30, 80]);
+          setTimeout(() => onGameOver(newScore + 500, true), 1200);
         } else {
           setTimeout(() => generateProblem(newScore), 600);
         }
@@ -109,7 +112,8 @@ const Calculadora: React.FC<GameProps> = ({ onGameOver, fontSize, difficulty, is
   };
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full max-w-md mx-auto p-4 select-none">
+    <div className="flex flex-col items-center justify-between h-full w-full max-w-md mx-auto p-4 select-none relative">
+      <Celebration active={showCelebration} type="success" />
       <div className={`flex justify-between w-full font-bold mb-4 ${fontSize === 'large' ? 'text-2xl' : 'text-xl'}`}>
         <div className="flex items-center gap-2">
             <span className="text-rose-500">❤️</span>
@@ -121,7 +125,6 @@ const Calculadora: React.FC<GameProps> = ({ onGameOver, fontSize, difficulty, is
         </div>
       </div>
 
-      {/* Pantalla de Visualización de la Calculadora */}
       <div className={`
         w-full h-36 bg-slate-900/80 rounded-[2.5rem] border-4 flex flex-col items-end justify-center p-8 gap-1 mb-6
         ${feedback === 'correct' ? 'border-emerald-500 shadow-2xl shadow-emerald-500/20' : 
@@ -136,32 +139,31 @@ const Calculadora: React.FC<GameProps> = ({ onGameOver, fontSize, difficulty, is
         <div className={`text-white font-mono font-black ${fontSize === 'large' ? 'text-6xl' : 'text-5xl'}`}>{input || '?'}</div>
       </div>
 
-      {/* Teclado Ergonómico para Móvil */}
       <div className="grid grid-cols-3 gap-3 w-full mt-auto">
         {[7, 8, 9, 4, 5, 6, 1, 2, 3].map(n => (
             <button 
                 key={n}
                 onPointerDown={(e) => { e.preventDefault(); handleInput(n.toString()); }}
-                className="bg-slate-800/80 h-20 rounded-3xl font-black text-white shadow-lg active:translate-y-1 active:bg-indigo-600 border-b-4 border-slate-950 transition-all text-3xl"
+                className="bg-slate-800/80 h-20 rounded-3xl font-black text-white shadow-lg active:scale-95 active:bg-indigo-600 border-b-4 border-slate-950 transition-all text-3xl touch-none"
             >
                 {n}
             </button>
         ))}
         <button 
           onPointerDown={(e) => { e.preventDefault(); handleBackspace(); }}
-          className="bg-rose-500/20 h-20 rounded-3xl text-rose-500 border-b-4 border-rose-900 active:translate-y-1 active:border-b-0 text-2xl font-black"
+          className="bg-rose-500/20 h-20 rounded-3xl text-rose-500 border-b-4 border-rose-900 active:scale-95 text-2xl font-black"
         >
           ⌫
         </button>
         <button 
           onPointerDown={(e) => { e.preventDefault(); handleInput('0'); }}
-          className="bg-slate-800/80 h-20 rounded-3xl font-black text-white shadow-lg active:translate-y-1 active:bg-indigo-600 border-b-4 border-slate-950 transition-all text-3xl"
+          className="bg-slate-800/80 h-20 rounded-3xl font-black text-white shadow-lg active:scale-95 active:bg-indigo-600 border-b-4 border-slate-950 transition-all text-3xl"
         >
           0
         </button>
         <button 
           onPointerDown={(e) => { e.preventDefault(); handleSubmit(); }}
-          className="bg-emerald-500 h-20 rounded-3xl text-white font-black border-b-4 border-emerald-800 text-4xl shadow-xl active:translate-y-1 active:border-b-0"
+          className="bg-emerald-500 h-20 rounded-3xl text-white font-black border-b-4 border-emerald-800 text-4xl shadow-xl active:scale-95"
         >
           =
         </button>

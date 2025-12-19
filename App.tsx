@@ -105,7 +105,7 @@ const App: React.FC = () => {
         dailyUpdate = { ...dailyUpdate, screensCompleted: newCount, isFinished: finished };
         
         if (finished) { 
-          // Otorga 5000 puntos de bonus si completa las 3 rondas
+          // Otorga 5000 puntos de bonus si completa las 3 rondas con éxito
           finalScore += 5000; 
           shouldExitGame = true; 
         } 
@@ -114,7 +114,7 @@ const App: React.FC = () => {
           shouldExitGame = false; 
         }
       } else {
-        // El usuario ha fallado: finalizar el reto diario inmediatamente para él y cerrar el juego
+        // El usuario ha fallado: finalizar el reto diario inmediatamente y cerrar el juego
         shouldExitGame = true;
         setIsChallengeActive(false);
         dailyUpdate = { ...dailyUpdate, isFinished: true }; 

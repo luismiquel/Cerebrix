@@ -1,14 +1,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GameProps } from '../../types';
+import Celebration from '../Celebration';
 
 const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, isDailyChallenge, currentRound = 1 }) => {
   const TARGET = 10;
   const [score, setScore] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
   
   const getInitialTime = () => {
     let baseTime = 30;
-    if (difficulty === 'master') baseTime = 10; // Reducido para mayor intensidad
+    if (difficulty === 'master') baseTime = 10;
     if (isSeniorMode) baseTime *= 1.5;
     if (isDailyChallenge) baseTime = Math.max(10, 35 - (currentRound * 6));
     return baseTime;
@@ -30,7 +32,6 @@ const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, 
     let maxVal = 10 * level;
     
     if (difficulty === 'master') {
-        // Maestro: Operaciones de 3 términos con números más grandes
         const a = Math.floor(Math.random() * 40) + 15;
         const b = Math.floor(Math.random() * 30) + 10;
         const c = Math.floor(Math.random() * 20) + 5;
@@ -42,9 +43,7 @@ const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, 
         if (op1 === '+') res += b; else res -= b;
         if (op2 === '+') res += c; else res -= c;
         
-        // Evitar resultados negativos en maestro para mantener el flujo rápido
         if (res < 0) { generateProblem(); return; }
-
         setProblem({ q: `${a} ${op1} ${b} ${op2} ${c}`, a: res });
     } else {
         const a = Math.floor(Math.random() * maxVal) + 2;
@@ -68,7 +67,6 @@ const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, 
 
   useEffect(() => {
     if (timeLeft > 0) {
-      // Cronómetro de precisión (decisegundos) para modo Maestro
       const timer = setInterval(() => setTimeLeft(t => Number((t - 0.1).toFixed(1))), 100);
       return () => clearInterval(timer);
     } else {
@@ -84,12 +82,12 @@ const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, 
       setScore(s => {
         const nextScore = s + 1;
         if (isDailyChallenge && nextScore >= TARGET) {
-          setTimeout(() => onGameOver(nextScore * 100, true), 500);
+          setShowCelebration(true);
+          setTimeout(() => onGameOver(nextScore * 100, true), 1200);
         }
         return nextScore;
       });
       setShowCorrect(true);
-      // Bono de tiempo drásticamente reducido en modo Maestro
       const timeBonus = difficulty === 'master' ? 0.7 : (isSeniorMode ? 3 : 2);
       setTimeLeft(t => Math.min(t + timeBonus, 45));
       setTimeout(generateProblem, 150);
@@ -100,7 +98,8 @@ const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, 
   };
 
   return (
-    <div className="text-center space-y-6 p-4 flex flex-col justify-center min-h-[500px] select-none touch-none">
+    <div className="text-center space-y-6 p-4 flex flex-col justify-center min-h-[500px] select-none touch-none relative">
+      <Celebration active={showCelebration} type="success" />
       <div className="flex justify-between items-center max-w-md mx-auto w-full px-6">
         <div className="flex flex-col items-start">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Aciertos</span>
@@ -124,20 +123,20 @@ const MathBlitz: React.FC<GameProps> = ({ onGameOver, isSeniorMode, difficulty, 
           <button 
             key={n} 
             onPointerDown={(e) => { e.preventDefault(); handleInput(n.toString()); }} 
-            className="h-20 rounded-3xl bg-slate-800/80 border-b-8 border-slate-950 font-black text-white active:translate-y-2 active:border-b-0 active:bg-emerald-600 transition-all shadow-xl text-3xl"
+            className="h-20 rounded-3xl bg-slate-800/80 border-b-8 border-slate-950 font-black text-white active:scale-95 active:translate-y-2 active:bg-emerald-600 transition-all shadow-xl text-3xl touch-none"
           >
             {n}
           </button>
         ))}
         <button 
           onPointerDown={(e) => { e.preventDefault(); setUserInput(''); }} 
-          className="h-20 rounded-3xl bg-rose-500/10 text-rose-500 font-black border-b-8 border-rose-900 active:translate-y-2 active:border-b-0 transition-all uppercase text-sm"
+          className="h-20 rounded-3xl bg-rose-500/10 text-rose-500 font-black border-b-8 border-rose-900 active:scale-95 active:translate-y-2 transition-all uppercase text-sm"
         >
           DEL
         </button>
         <button 
           onPointerDown={(e) => { e.preventDefault(); handleInput('0'); }} 
-          className="h-20 rounded-3xl bg-slate-800/80 border-b-8 border-slate-950 font-black text-white active:translate-y-2 active:border-b-0 active:bg-emerald-600 transition-all shadow-xl text-3xl"
+          className="h-20 rounded-3xl bg-slate-800/80 border-b-8 border-slate-950 font-black text-white active:scale-95 active:translate-y-2 active:bg-emerald-600 transition-all shadow-xl text-3xl"
         >
           0
         </button>
